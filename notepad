@@ -1,0 +1,1426 @@
+Tổng hợp netpro
+Cấu hình VTP
+
+VTP gửi cập nhật ra tất cả các kết nối trunk (ISL hay Dot1q). Tuy nhiên, nếu theo chế độ mặc định, các switch sẽ trong chế độ server. Nếu không có VTP domain name được cấu hình, switch sẽ không gửi ra các VTP updates. Trước khi một switch có thể học thông tin VLAN từ các switch khác, ít nhất một switch phải là VTP server với cấu hình tối thiểu, đặc biệt là phải có domain name.
+
+ Các vlan bình thường và vlan mở rộng
+
+ Một vài vlan được xem là bình thường, trong khi một vài vlan khác được xem là vlan mở rộng. Các vlan được xem là bình thường nếu số vlan nằm trong khoảng từ 1 cho đến 1005 và có thể được quảng bá thông qua VTP phiên bản 1 và 2. Các vlan này có thể được cấu hình trong chế độ vlan và được lưu trữ trong file vlan.dat chứa trong flash. Các vlan mở rộng sẽ trong tầm từ 1006 cho đến 4094. Tuy nhiên các vlan này không thể được cấu hình trong chế độ vlan database và không được lưu trong vlan.dat hay không được quảng cáo thông qua VTP. Để cấu hình vlan mở rộng này, switch phải ở trong chế độ transparent. Cả hai loại giao thức trunk ISL và dot1q đều hỗ trợ dãy vlan mở rộng. Ban đầu, ISL chỉ hỗ trợ các vlan bình thường, dùng 10 đến 15 bit trong ISL header để chỉ ra vlan. Giao thức 802.1Q dùng 12 bit để chỉ ra thông tin vlan, vì vậy hỗ trợ các vlan mở rộng. Sau đó, Cisco điều chỉnh lại giao thức ISL dùng 12 bit để mang thông tin vlan, vì vậy ISL cũng đã hỗ trợ các vlan mở rộng. 
+
+Lưu trữ cấu hình VLAN 
+Các switch Catalyst IOS lưu thông tin VLAN và VTP ở một trong hai nơi; hoặc là trong flash gọi là vlan.dat hoặc trong running-config. Hệ điều hành IOS sẽ chọn vị trí của thông tin cấu hình dựa trên thông tin là switch được cấu hình trong chế độ server hay là transparent và một phần dựa vào thông tin là các vlan là bình thường hay là mở rộng. Bảng dưới đây sẽ mô tả các chế độ cấu hình được dùng để cấu hình vlan, chế độ VTP và dãy vlan. 
+
+Chức năng
+
+Khi trong chế độ VTP server
+
+Khi trong chế độ transparent
+
+Cấu hình các vlan trong dãy vlan bình thường
+
+Cả trong chế độ cấu hình vlan database và chế độ config
+
+Cả ở vlan database và trong chế độ config
+
+Cấu hình các vlan mở rộng
+
+Không thể
+
+Chỉ trong chế độ config
+
+VTP và các vlan trong dãy vlan bình thường được lưu trữ ở?
+
+Vlan.dat trong flash
+
+cả trong vlan.dat và running config
+
+Các vlan mở rộng được lưu trữ ở?
+
+Không được cho phép khi ở chế độ server
+
+Chỉ trong running config
+
+ Khi switch khởi động lại, nếu chế độ VTP hoặc domain name trong file vlan.dat và file config là khác nhau, thông tin trong file vlan.dat sẽ được dùng. Đặc biệt, nếu bạn xóa file startup-config và khởi động lại switch, thực sự bạn không xóa các thông tin vlan. Để thực sự xóa vlan và cấu hình VTP, bạn phải dùng câu lệnh delete flash:vlan.dat. Trong trường hợp ta dùng nhiều VTP server, nếu ta xóa file vlan.dat trên một switch và khởi động lại nó ngay khi switch khởi động xong và hình thành kết nối trunk, switch sẽ học lại thông tin vlan cũ thông qua các gói tin cập nhật VTP từ các VTP server khác.
+
+VLAN trunking: ISL và 802.1Q 
+
+Kết nối vlan trunking cho phép switch, routers và ngay cả PC với các card mạng phù hợp gửi traffic cho nhiều vlan trên một kết nối đơn duy nhất. Để có thể xác định được một frame thuộc về vlan nào, thiết bị một bên kết nối trunk sẽ thêm vào header ban đầu của Ethernet. Phần thêm vào này sẽ chứa VLAN ID của vlan. Nếu hai thiết bị cấu hình trunking, cả hai đầu phải thống nhất với nhau là dùng ISL hay dot1q.
+
+ Sự khác nhau giữa hai giao thức được thống kê ở bảng sau:
+
+Đặc điểm
+
+ISL
+
+802.1Q
+
+Kiểu vlan được hỗ trợ
+
+Vlan bình thường và mở rộng
+
+Vlan bình thường và mở rộng
+
+Giao thức định nghĩa bởi
+
+Cisco
+
+IEEE
+
+Đóng gói frame ban đầu hay chỉ thêm tag
+
+Đóng gói
+
+Thêm tag
+
+Hỗ trợ native vlan
+
+Không
+
+Có
+
+ ISL và 802.1q khác nhau ở cách mà các giao thức này thêm header vào frame trước khi gửi nó ra kết nối trunk. ISL thêm vào 26bytes header và bốn bytes trailer mới (để cho phép chưa giá trị FCS mới). Quá trình đóng gói header này dùng địa chỉ nguồn là địa chỉ của thiết bị thực hiện quá trình trunking thay thế cho địa chỉ nguồn của frame ban đầu. ISL dùng địa chỉ đích là địa chỉ multicast 0100.0C00.0000 hoặc 0300.0C00.0000.
+
+ Kiểu trunk 802.1Q chèn vào 4 bytes header ngay phía sau phần địa chỉ nguồn, được gọi là tag. Các địa chỉ ban đầu của frame không bị ảnh hưởng. Thông thường, một card mạng Ethernet sẽ tìm thấy một trong hai trường Ethernet Type hoặc 802.3 ngay phía sau phần địa chỉ nguồn. Với dạng tagging 802.1Q, hai bytes đầu tiên trong phần địa chỉ chứa một giá trị là 0×8100, có ý nghĩa là chỉ ra frame bao gồm hearder của trunking 802.1Q. Bởi vì 802.1Q không thực sự đóng gói frame, giao thức này thường được gọi là frame tagging.
+
+ Đặc điểm native vlan cho phép một switch cố gắng dùng 802.1q trunking trên một interface, nhưng nếu đầu thiết bị còn lại không hỗ trợ trunking, traffic của native vlan vẫn có thể được gởi trên kết nối. Mặc định, native vlan là vlan 1.
+
+ 
+
+Các giao thức HSRP/VRRP/GLBP và NTP
+
+HSRP, VRRP, và GLBP 
+
+Các IP host có thể có vài cách thức khác nhau để quyết định một router nào là router mặc định hoặc là default gateway. Ví dụ DHCP, BootP, ICMP Router Discovery protocol IRDP, cấu hình bằng tay hoặc ngay cả bằng cách dùng một giao thức định tuyến động. Hai cách thức phổ biến nhất là dùng DHCP và thông qua cấu hình bằng tay sẽ giúp cho host có địa chỉ IP của gateway của nó. Giao thức HSRP, VRRP và GLBP tượng trưng cho một số công cụ tốt nhất để khắc phục các vấn đề liên quan đến việc một host chỉ biết một địa chỉ như là đường đi duy nhất của nó ra khỏi subnet. 
+
+HSRP cho phép nhiều router cùng chia sẽ một địa chỉ IP ảo và các địa chỉ MAC sao cho các máy của người dùng cuối sẽ không nhận ra khi nào có sự cố mạng xảy ra. Một vài đặc điểm chủ chốt của HSRP là:
+
+Địa chỉ IP là ảo và địa chỉ MAC cũng ảo trên router master.
+
+Các router dự phòng sẽ lắng nghe các gói hello từ router đang active, mặc định mỗi 3 giây và 10 giây cho khoảng thời gian dead.
+
+Độ ưu tiên cao nhất (mặc định là 100, trong tầm từ 1-255) sẽ xác định router, với cơ chế pre-emption bị tắt.
+
+Hỗ trợ tính năng tracking, trong đó độ ưu tiên của một router sẽ bị giảm khi một interface đang bị theo dõi bị hỏng hóc.
+
+Có thể có tối đa 255 nhóm HSRP trên mỗi interface, cho phép một hình thức cân bằng tải.
+
+Địa chỉ MAC ảo có dạng 0000.0C07.Acxx trong đó xx là chỉ số của nhóm HSRP.
+
+Địa chỉ của IP ảo phải trong cùng giá trị subnet của cổng của router trong LAN.
+
+Địa chỉ của IP ảo phải khác với bất kỳ một địa chỉ thật nào của các cổng tham gia vào HSRP.
+
+ HSRP là một giao thức độc quyền của Cisco. VRRP là một giao thức thực hịên cùng một chức năng. VRRP có vài sự khác biệt sau so với HSRP:
+
+ VRRP dùng địa chỉ multicast là 0000.5E00.01xx trong đó xx là dạng hex của chỉ số nhóm của VRRP.
+
+VRRP không hỗ trợ tính năng theo dõi cổng.
+
+Trong Cisco IOS 12.2T/12.3, mặc định VRRP dùng cơ chế pre-emption nhưng HSRP thì mặc định dùng non pre-empt.
+
+Thuật ngữ master trong VRRP có cùng nghĩa với thuật ngữ Active của HSRP.
+
+ GLBP là một giao thức mới hơn của Cisco cho phép đặc tính cân bằng tải bên cạnh tính năng dự phòng cho gateway. Các host vẫn có thể chỉ đến một địa chỉ gateway mặc định, nhưng GLBP cho phép các host gửi traffic đến một trong bốn router trong một nhóm GLBP. Để thực hiện việc này, router AVG sẽ gán từng router trong một nhóm một địa chỉ MAC duy nhất có dạng 0007.B400.xxyy trong đó xx là địa chỉ nhóm và yy là các số khác nhau cho từng router (01,02,03 hay 04). Khi một máy client hỏi địa chỉ MAC của địa chỉ ảo của nó, AVG sẽ trả lời bằng một trong bốn địa chỉ MAC ảo có thể. Do được trả lời với các địa chỉ MAC khác nhau, các host trong subnet đó sẽ cân bằng traffic giữa các router chứ không chỉ gửi traffic về một router duy nhất.
+
+ Network Time Protocol
+
+ Giao thức NTP phiên bản 3 (RFC 1305) cho phép các IP host đồng bộ thời gian của hệ thống từ một nguồn đồng hồ thời gian. Ví dụ, router và switch có thể đồng bộ đồng hồ thời gian của nó để các sự kiện diễn ra trong hệ thống đầy đủ ý nghĩa hơn do có các nhãn thời gian chính xác. Theo thiết kế, phần lớn router và switch dùng chế độ NTP client, điều chỉnh đồng hồ của nó dựa trên thời gian được cung cấp bởi một NTP server. NTP định nghĩa các thông điệp này giữa client và server và thuật toán một máy client dùng để điều chỉnh đồng hồ của nó. Các routers và switch có thể được cấu hình như NTP server hoặc trong chế độ NTP symmetric active mode – là chế độ trong đó router hoặc switch sẽ đồng bộ hóa với nhau.
+
+ Các NTP server có thể tham khảo các NTP server khác để có một nguồn đồng hồ chính xác hơn. Mức độ chính xác đuợc chỉ ra bởi mức stratum. Ví dụ đồng hồ nguyên tử và các hệ thống định vị toàn cầu GPS có mức stratum 1 (thấp nhất/ tốt nhất có thể). Đối với một mạng doanh nghiệp, các router và các switch có thể tìm đến các nguồn NTP trên Internet hoặc dùng các NTP server phần cứng, có tích hợp GPS.
+
+ 
+
+Quản trị mạng với giao thức SNMP 
+Giao thức Simple Network Management Protocol (SNMP) dùng một cấu trúc trong đó các thiết bị có thể được quản trị có các thông tin mà một phần mềm quản trị (SNMP Manager) cần để hiển thị một vài hoạt động của hệ thống mạng. Mỗi SNMP agent sẽ giữ một cơ sở dữ liệu, được gọi là  Management Information Base (MIB), trong đó chứa các thông tin khác nhau về hoạt động của thiết bị mà agent đang giám sát. Phần mềm quản lý sẽ thu thập thông tin thông qua SNMP.
+
+ SNMP được định nghĩa với bốn chức năng hoạt động chính để cho phép các phần mềm quản lý có thể quản lý các agents:
+
+ Định nghĩa dữ liệu: Các qui ước cho cú pháp để định nghĩa dữ liệu mà một tác nhân agent dùng. Các đặc tả này được gọi là cấu trúc thông tin quản lý (Structure of Management Information – SMI). 
+
+MIB: Trên 100 chuẩn Internet định nghĩa các MIBs khác nhau, mỗi MIB cho một lĩnh vực công nghệ khác nhau. Định nghĩa MIB tuân theo các phiên bản cấu trúc thông tin quản lý SMI phù hợp. 
+
+Giao thức: các thông điệp được dùng bởi các agent và manager để trao đổi thông tin quản trị
+
+ Bảo mật và quản trị (Security và Administration): Các định nghĩa làm thế nào để bảo mật quá trình trao đổi thông tin giữa tác nhân agent và phần mềm quản trị manager.
+
+ 
+
+Bằng cách chia SNMP ra thành các lĩnh vực hoạt động này, mỗi phần đã được cải tiến và phát triển độc lập nhiều năm qua. Tuy nhiên, ta cần phải nắm một vài đặc điểm quan trọng của các phiên bản chính thức của SNMP. 
+
+Phiên bản SNMP
+
+Mô tả
+
+1
+
+Dùng SMIv1 dùng phương thức xác thực đơn giản với community nhưng chỉ dùng MIB-I.
+
+2
+
+Dùng SMIv2. Loại bỏ việc sử dụng communities thêm vào các thông điệp Getbulk và Inform nhưng đã bắt đầu với phiên bản MIB-II. 
+
+2c
+
+Phiên bản giả cho phép SNMPv1 giao tiếp với SNMPv2. Tương đương với SNMPv2.
+
+3
+
+Phần lớn tương tự như SNMPv2 nhưng thêm vào các tính năng bảo mật. Hỗ trợ tương thích ngược. Dùng MIB-II.
+
+ Phiên bản SNMPv1 định nghĩa chuỗi ký tự community string để sử dụng như một dạng mật khẩu đơn giản. SNMPv2 không còn yêu cầu dùng chuỗi ký tự community string tuy nhiên để duy trì tính tương thích, thuộc tính này giữ lại như là một tùy chọn. SNMPv3 cũng vẫn duy trì tính tương thích ngược này.
+
+Các thông tin linh tinh liên quan đến TCP header.
+
+Trường trong TCP header
+
+Chức năng
+
+PSH
+
+Có nghĩa là “Push”. Giá trị này được thiết lập bởi bên truyền TCP để làm cho bên nhận ngay lập tức truyền dữ liệu trong segment đến socket của bên máy nhận cùng với tất cả các dữ liệu khác mà máy nhận chưa chuyển đến lớp ứng dụng.
+
+URG
+
+Có nghĩa là “Urgent”. Giá trị này được thiết lập bởi bên gửi TCP để làm cho bên máy nhận truyền dữ liệu bên trong segment đế ứng dụng của máy nhận. Bất kỳ dữ liệu nào đã nhận trước đây trên kết nối này nhưng chưa được truyền đến ứng dụng không nhất thiết phải truyền lần này.
+
+Urgent Pointer
+
+Được dùng chỉ khi bit URG được thiết lập. Giá trị này định nghĩa vị trí kết thúc của phần dữ liệu bên trong segment này.
+
+Offset (HLEN)
+
+Định nghĩa chiều dài của header (HLEN) còn được gọi là khoảng cách đến đến vị trí cuối của header. Giá trị này được nhân lên cho 4 sẽ là giá trị header thật của chiều dài header tính bằng bytes.
+
+Checksum
+
+Giá trị checksum tính trên TCP header, không bao gồm phần dữ liệu
+
+ 
+Các ứng dụng TCP/IP
+
+Giao thức
+
+Lớp transport
+
+Port
+
+RFC
+
+Telnet
+
+TCP
+
+23
+
+318
+
+FTP
+
+TCP
+
+20,21
+
+959
+
+TFTP
+
+UDP
+
+69
+
+1350
+
+SMTP
+
+TCP
+
+25
+
+2821
+
+POP3
+
+TCP
+
+110
+
+1939
+
+IMAP
+
+TCP
+
+143
+
+3501
+
+TLS/SSL
+
+TCP
+
+443
+
+2246
+
+LDAP
+
+TCP
+
+389
+
+2251
+
+HTTP
+
+TCP
+
+80
+
+2616
+
+DNS
+
+TCP/UDP
+
+53
+
+1034,1035
+
+NETBIOS NAME SERVICES
+
+UDP
+
+137
+
+1002
+
+NETBIOS DATAGRAM
+
+UDP
+
+138
+
+1002
+
+NETBIOS SESSION SERVICES
+
+TCP
+
+139
+
+1002
+
+SNMP
+
+UDP
+
+161,162
+
+NHIỀU
+
+BGP
+
+TCP
+
+179
+
+NHIỀU
+
+RIP
+
+UDP
+
+520
+
+NHIỀU
+
+ 
+
+ 
+
+Rapid Spanning Tree Protocol 
+
+IEEE 802.1w Rapid Spanning Tree Protocol (RSTP) cải tiến hoạt động của 802.1D truyền thống với một mục đích duy nhất: cải tiến sự hội tụ của STP. Để thực hiện được việc này, RSTP định nghĩa ra một dạng biến thể khác của BPDU, các trạng thái mới của cổng và các vai trò cổng mới. Tất cả các dạng thay đổi này đều đảm bảo tính tương thích ngược với 802.1D. Các yếu tố chủ chốt giúp cho việc tăng tốc khả năng hội tụ là: 
+
+Chỉ chờ một khoảng thời gian tối đa là 3 lần hello trên một RP trước khi phản ứng với sự thay đổi. Trước đây, khoảng thòi gian này là MaxAge. Các tiến trình mới cho phép chuyển đổi từ trạng thái disabed (thay thế cho trạng thái blocking trong 802.1D) sang trạng thái learning, bỏ qua trạng thái listenning của 802.1D. Chuẩn hóa các đặc điểm như Cisco PortFast, UplinkFast và backbonefast. Thêm vào các đặc điểm như cho phép cổng dự phòng cho DP khi switch có nhiều cổng kết nối vào cùng một phân đoạn mạng dùng chung. 
+
+Để hỗ trợ các tiến trình mới này, RSTP dùng cùng cơ chế hello BPDU, sử dụng thêm một số bit chưa dùng trước đây. Ví dụ, RSTP sẽ định nghĩa thông điệp hello có thêm tuỳ chọn giống như chức năng RLQ của Cisco backbonefast. RSTP nhóm các cổng lại, dùng các kiểu kết nối khác nhau để mô tả từng nhóm. RSTP có thể quyết định trạng thái của cổng dựa trên loại thiết bị kết nối vào từng cổng, vì vậy giúp cho quá trình hội tụ nhanh hơn.
+
+ 
+
+Kiểu kết nối (link type)
+
+Mô tả
+
+Point-to-point
+
+Kết nối một switch đến một switch khác. Cisco switch xem các kết nối FullDupleX trong đó hello BPDU được nhận là các kết nối point-to-point.
+
+Dùng chung (Shared)
+
+Kết nối một switch đến một hub
+
+Edge
+
+Kết nối đến một thiết bị của người dùng cuối.
+
+ Trong phần lớn các thiết kế mạng LAN hiện đại, hub không được dùng nữa. Vì vậy tất cả các kết nối phải là hoặc là điểm-điểm (point-to-point) hoặc là kiểu edge. Kiểu kết nối là edge nghĩa là cổng đang gắn vào một thiết bị và thiết bị không phải là một switch. Vì vậy, RSTP xem các kết nối edge giống như tính năng Cisco portfast. Và thật ra, câu lệnh spanning-tree portfast được dùng để định nghĩa một kết nối như là edge trong RSTP. Nói cách khác, RSTP đặt các kết nối kiểu edge vào trạng thái forwarding một cách tức thì. 
+
+Đối với các kết nối point-to-point, RSTP sẽ hỏi switch láng giềng về tình trạng của nó. Ví dụ nếu một switch không nhận được gói hello định kỳ trên kết nối điểm-điểm, switch sẽ truy vấn switch láng giềng. Thiết bị láng giềng sẽ trả lời, nêu rõ là nó có mất đường đi về root hay không. Tính năng này giống như tính năng backbonefast của Cisco, nhưng dùng thông điệp chuẩn của IEEE để đạt cùng một mục đích. RSTP cũng định nghĩa lại các trạng thái cổng của 802.1D, trong đó trạng thái listening là không còn cần thiết nữa.
+
+ Trạng thái quản trị
+
+Trạng thái của 802.1D
+
+Trạng thái 802.1w
+
+Disabled
+
+Disabled
+
+Discarding
+
+Enable
+
+Blocking
+
+Discarding
+
+Enable
+
+Listening
+
+Discarding
+
+Enable
+
+Learning
+
+Learning
+
+Enable
+
+Forwarding
+
+Forwarding
+
+ Trong RSTP, trạng thái discarding có nghĩa là cổng sẽ không truyền hay nhận frame hoặc học địa chỉ MAC, bất chấp cổng có bị shutdown, sự cố…Khi RSTP đã quyết định chuyển trạng thái từ discarding sang forwarding, cổng đó sẽ ngay lập tức đi vào trạng thái learning. Từ thời điểm đó, quá trình tiếp tục giống như trong 802.1D. RSTP không còn cần trạng thái listening bởi vì nó sẽ chủ động hỏi các thiết bị láng giềng, đảm bảo sao cho không bị vòng lặp.
+
+ RSTP dùng thuật ngữ vai trò cổng (role) để chỉ ra một cổng là RP hay là một DP. RSTP sử dụng RP và DP giống như trong 802.1D, tuy nhiên RSTP thêm vào vài vai trò khác. 
+
+RSTP Role
+
+Định nghĩa
+
+Root port
+
+Giống như trong 802.1D
+
+Designated port
+
+Giống như trong 802.1D
+
+Alternate port
+
+Giống như cổng dự phòng trong UplinkFast
+
+Backup port
+
+Một cổng kết nối vào cùng một phân đoạn mạng dùng chung giống như nhiều cổng khác trên cùng switch nhưng cổng kia là DP cho phân đoạn mạng đó. Cổng backup sẽ thay thế khi port DP bị sự cố.
+
+Khái niệm Alternate Port thì giống như khái niệm UplinkFast. Chức năng Backup port thì không có chức năng tương đương bên Cisco. bạn có thể bật chức năng RSTP trong switch dùng lệnh spanning-tree mode rapid-pvst. Ngoài ra, bạn có thể dùng 802.1s MST.
+
+ 
+
+Các cơ chế chuyển gói trong router
+Process switching, Fast Switching  và Cisco Express Forwarding 
+
+Cisco triển khai một vài phương thức xử lý nâng cao hiệu quả của tiến trình xử lý forward gói tin trong router, gọi là switching path. Trong phần này sẽ giới thiệu về hai phương thức xử lý trong hệ thống mạng Cisco router ngày nay bao gồm fast switching và CEF. 
+
+Trong cách xử lý fast switching, gói tin đầu tiên đến một địa chỉ IP xác định sẽ được xử lý đúng theo các bước căn bản trên router, nghĩa là xử lý theo đúng trình tự của phương thức process switching (bao gồm 6 bước ở mô hình trên). Với gói tin đầu tiên này, router sẽ thêm một dòng thông tin vào một bảng gọi là bảng fast-switching cache, đôi khi còn được gọi là route cache. Bảng này cất giữ những thông tin để đóng đóng gói frame trước khi chuyển đi bao gồm: địa chỉ IP đích, thông tin về next-hop router, và thông tin về Data Link header. Với những gói tin tiếp theo có cùng địa chỉ đích với gói tin đầu tiên, router sẽ xử lý nhanh hơn dựa vào bảng fast-switching, nhờ đó thời gian xử lý và chuyển gói tin của router được rút ngắn lại. 
+
+Măc dù, tốt hơn nhiều so với process switching, fast switching cũng còn một vài điểm hạn chế. Hạn chế thứ nhất là gói tin đầu tiên vẫn phải xử lý theo process switching. Trong phương thức fast switching, thông tin được lưu giữ trong bảng fast switching chỉ là địa chỉ đích cụ thể, mà không phải là địa chỉ lớp mạng. Do đó hạn chế lớn thứ hai chính là bảng fast switching nhanh chóng bị quá tải, khi đó bảng fast-switching cần phải được giải phóng. Một hạn chế thứ ba chính là khả năng cân bằng tải (load balancing) trong fast-switching chỉ thực thi đối với mỗi địa chỉ đích. 
+
+Phương thức CEF khắc phục được những hạn chế chính của fast-switching. CEF nâng cao khả năng xử lý bởi việc sử dụng một kiến trúc gọi là FIB (Forwarding Information Base). FIB cất giữ thông tin của tất cả các tuyến đường (route) trong bảng định tuyến. Giống như đối với bảng fast-switching, những thông tin mà FIB cất giữ cũng sẽ được cập nhật khi có một luồng dữ liệu mới xuất hiện, CEF sẽ tải (load) những dòng thông tin trong FIB khi route được thêm vào hay xóa đi khỏi bảng định tuyến. So với fast-switching, CEF có những cải tiến vượt trội khi không phải giải phóng những dòng thông tin khỏi FIB, không đòi hỏi gói tin đầu tiên phải được xử lý theo process switching, và cũng cho phép cân bằng tải trên những đường đi có chi phí bằng nhau .
+
+ 
+
+Khi nhận được một gói tin mới, những router sử dụng CEF sẽ tìm kiếm thông tin trong FIB. Kiến trúc FIB được Cisco thiết kế theo một cấu trúc cây đặc biệt gọi là mtrie, cấu trúc cây đặc biệt này làm giảm thời gian tìm kiếm các dòng thông tin trong FIB. 
+
+Dòng thông tin được tìm thấy trong FIB ánh xạ đến một dòng thông tin trong một bảng khác gọi là CEF adjecency table. CEF adjecency table là danh sách bao gồm những cổng ra (outgoing interface) và tất cả những thông tin cần thiết khác để xây dựng Data Link header và trailer trước khi tiếp tục truyền gói tin đi. 
+
+Tóm lại, khi một router sử dụng CEF để chuyển gói tin, nó sẽ dễ dàng và nhanh chóng tìm được tất cả những thông tin cần thiết để chuyển gói tin. 
+
+Bảng 1.1 : tóm tắt về các đặc tính chính của ba kiểu xử lý và chuyển gói tin :
+
+Phương thức
+
+Bảng cất giữ thông tin forward
+
+Phương thức cân bằng tải
+
+Process switching
+
+Routing table
+
+Trên mỗi gói tin
+
+Fast switching
+
+Fast-switching cache
+
+Trên mỗi địa chỉ IP đích
+
+ 
+
+ 
+
+Lệnh ip cef ở chế độ cấu hình toàn cục sẽ bật tính năng chuyển mạch cef trên tất cả các cổng của router. Lệnh no ip route-cache cef ở interface mode có thể dùng để tắt tính năng cef trên những cổng cụ thể. Trong nhiều sản phẩm cao cấp của Cisco, CEF có thể được phát triển trên những linecard. Tương tự như Cisco router, switch đa tầng (multilayer switch) của Cisco sử dụng CEF để chuyển dữ liệu ở L3, bằng cách load CEF table đến forwarding ASICs. 
+
+Xây dựng bảng CEF adjacency: ARP và Inverse ARP 
+
+Như ta đã biết, CEF adjacency table là bảng danh sách chứa những cổng đi ra và địa chỉ L2 và L3 có thể đến được qua cổng đó. Bảng này cũng cất giữ thông tin về L2 header để xây dựng frame đến thiết bị láng giềng kế tiếp (adjacency). 
+
+CEF adjaccency table phải được xây dựng từ bảng định tuyến và từ những tài nguyên khác. Thông tin trong bảng định tuyến bao gồm cổng ra và địa chỉ IP (địa chỉ L3) của thiết bị kế tiếp (next-hop). Để hoàn thành thông tin trong CEF adjacency table cần phải có thêm thông tin về địa chỉ L2 và những thông tin khác để xây dựng frame. Một khi đã có đầy đủ thông tin router có thể xây dựng hoàn chỉnh thông tin trong CEF adjacency table. 
+
+Lấy ví dụ, Router R3 trong hình 1.1, để đến được next-hop router (Router1- địa chỉ 172.31.13.1) qua cổng s0/0.3333, Router R3 cần phải xác định đúng số DLCI (Data-Link connection identifier) để đóng gói frame đến Router R1. Vì vậy, để xây dựng thông tin trong CEF adjacency table, CEF cần thêm thông tin trong bảng ARP table, thông tin tham chiếu trong FrameRelay hay những thông tin tham chiếu từ L3 đến L2 khác. 
+
+Trước hết, cần xem lại về giao thức ARP (Address Resolution Protocol), giao thức tự động phân giải từ địa chỉ IP sang địa chỉ MAC. Khi một host A muốn biết địa chỉ MAC của một host B trong cùng một mạng LAN khi đã biết địa chỉ IP của B, host A sẽ gửi một thông điệp ARP request dưới dạng gói tin broadcast đến tất cả các host trên cùng mạng LAN. Tất cả các host sẽ nhận được thông điệp ARP request này, tuy nhiên chỉ host B gửi lại ARP reply dưới dạng gói tin unicast tới A. Sau khi nhận được ARP request, máy A sẽ cập nhật thông tin vào bảng MAC.
+
+ 
+
+ 
+
+Cơ chế bảo vệ Cây Spanning Tree
+II.7 Cơ chế bảo vệ Cây Spanning Tree
+Để đạt được và duy trì một Cây Spanning Tree – một quá trình gởi và nhận BPDU xuyên suốt mô hình mạng.Với điều kiện bình thường, với tất cả các Switch đều ngang bằng nhau và tuân theo một quy luật chung – cơ chế chống lặp sẽ được xác định một cách tự động.
+Hai nguyên nhân cơ bản có thể phá vỡ quá trình hoạt động của cây Spanning Tree (Ngay cả trong khi STP đang chạy):
+■ Trên một cổng mà chưa được nhận BPDU , những BPDU không mong đợi. Khi BPDU
+đột nhiên xuất hiện vì lý do nào, các cấu trúc liên kết STP có thể hội tụ lại để cho kết quả khác
+■ Trên một cổng thông thường nhận được BPDUs, BPDUs luôn được mong đợi. Khi BPDUs
+đột nhiên biến mất vì lý do nào đó .một chuyển đổi nhỏ có thể làm cho mô hình mạng thay đổi và tạo nên 1 vòng lặp khác.
+
+II.7.1 Bảo vệ cây Spanning Tree trước những BPDU không mong muốn
+
+Một mạng đang chạy STP sử dụng BPDU để giao tiếp giữa cácSwitch .Switch nhận thức nhau và mô hình liên kết liên giữa chúng. Sau khi một RootSwitch được bầu, BPDUs được tạo ra bởi RootSwitch và được chuyển tiếp qua các switch khác.
+Cuối cùng, tất cả các switch trong vùng chạy STP nhận BPDU của Root để các mạng hội tụ cây Spanning tree ổn định.
+Để duy trì sự liên kết hiệu quả, các vị trí của các Rootswitch phải được dự đoán được.
+Phải chắc rằng bạn đã cấu hình một switch để trở thành Root Switch và thứ hai Rootswitch dự phòng. Điều gì xảy ra khi một “switch ngoại ” được kết nối vào mạng, và đột nhiên có khả năng trở thành Root Switch ?Do vậy Cisco bổ sung thêm hai tính năng STP giúp ngăn ngừa việc đó là
+RootGuard , BPDU guard , LoopGuard , mất BPDU .
+
+II.7.2 Root Guard
+Khi STP topology đã hội tụ và tạo thành một sơ đồ mạng không bị loop (loop-free topology) thì các cổng của switch sẽ đóng một số loại vai trò trong spanning tree.
+Rootport là cổng của switch có đường đi về rootswitch thấp nhất. Designated port là cổng trên một phân đoạn mạng có đường đi ngắn nhất về rootswitch. Cổng này có nhiệm vụ truyền các BPDUs xuống cho các switch ở nhánh dưới. Blocking port là những cổng không phải là root hay designated. Alternated port là những cổng ở trạng thái blocking, sẽ thay thế root port ngay lập tức nếu root port bị hỏng hóc hay sự cố. Alternated port là khái niệm được dùng khi sử dụng tính năng UplinkFast. Forwarding port là cổng bình thường của switch cho phép thiết bị đầu cuối kết nối vào.
+Sau khi rootswitch được tạo ra, nó sẽ gửi ra các BPDU xuống cho các switch ở nhánh dưới. Các switch nhánh dưới sẽ luôn luôn theo dõi các BPDUs được gửi ra từ root switch nhằm xem xét xem root switch có còn hoạt động bình thường nữa không. Nếu BPDU không còn nhận được nữa, các switch ở nhánh dưới sẽ cho rằng root switch đã bị sự cố hoặc đường dẫn đến root không còn tồn tại nữa. Giải thuật STP được chạy lại và tạo lại một sơ đồ mạng khác.
+Vị trí của RootSwitch trong STP topology rất quan trọng. Nó quyết định đường đi của các switch nhánh dưới lên Rootswitch là có tối ưu hay không. Do đặc điểm bầu chọn Root là dựa vào các BPDUs nên khi có một switch mới được thêm vào trong sơ đồ mạng STP thì sơ đồ mạng STP lúc này thay đổi. Các switch cần phải tính toán và bầu chọn lại RootSwitch cũng như đường đi mới đến RootSwitch. Trong BPDUs có chứa BridgeID, trong BridgeID lại chứa độ ưu tiên của switch. Switch nào có priority nhỏ nhất sẽ trở thành Root switch. Tuy nhiên, nếu có một switch lạ đã được cấu hình với priority thấp hơn cả priority của RootSwitch hiện tại, switch này gắn vào mạng và sẽ trở thành RootSwitch.
+Tính năng Root guard ra đời cho phép admin luôn giữ được vị trí Root switch theo ý đã chọn mà không sợ bị bất kì một switch lạ nào gắn thêm vào làm thay đổi STP topology. Với tính năng này, nếu có một switch lạ quảng bá một Superior BPDU cho root switch, Rootswitch sẽ không cho phép switch lạ này trở thành New Root Switch. Nó sẽ đưa cổng nhận superior BPDU trước đó trở về trạng thái Root-inconsistent. Data sẽ không được gửi nhận ở trạng thái này. Khi superior BPDUs không còn nhận được trên cổng này, cổng này sẽ trải qua các trạng thái của STP để đưa về sử dụng bình thường.
+Ta chỉ cấu hình root guard trên Root switch hoặc các switch nào mà ta không muốn nhận BPDUs của một switch lạ, không cấu hình rootguard trên swich có tính năng uplinkfast. Vì khi cấu hình RootGuard trên switch này sẽ làm cho các alternated port rơi vào trạng thái Root-inconsistent. Điều này làm cho các alternated port không thể chuyển sang trạng thái forwarding. Cấu hình Rootguard trên interface nào muốn bảo vệ bằng câu lệnh:
+Switch(config-if)# spanning-tree guard root
+Nếu áp đặt tính năng RootGuard lên cổng thì cho dù Switch mới có Bridge ID ưu tiên hơn (về trị số sẽ là thấp hơn) thì vẫn không ảnh hưởng gì đến mạng. Tính năng này rất mạnh, nó cấm hoàn toàn Switch lạ vào mạng không thực hiện được telnet, ping …Khi kiểm tra láng giềng trên Switch mới này, bạn sẽ không thấy được Switch trong mạng.
+Root Guard và BPDU Guard là hai phương pháp nhằm ngăn chặn gói BPDU lạ đi vào mạng. Nói rõ hơn khi có Switch lạ cắm vào mạng thì Switch này không thể trao đổi với các Switch khác trong mạng nếu như có bật tính năng này lên. Các tính năng này chỉ có tác dụng trên cổng, có nghĩa là bạn phải cấu hình trên từng cổng. Nếu bạn cấu hình trên cổng f0/1 mà lại đi cắm Switch lạ vào cổng f0/2 thì Switch mới này vẫn có thể trao đổi thông tin với mạng một cách bình thường.Bạn có thể xem trạng thái Root Port khi mà tính năng Root Guard đặt nó vào trạng thái root-inconsistent theo câu lệnh sau :
+Switch#show spanning-tree inconsistentports
+
+
+II.7.3 BPDU Guard
+
+Tính năng BPDUGuard cũng tương tự như RootGuard. Tính năng BPDUGuard được khuyến cáo sử dụng ở cổng có tính năng portfast. Tính năng portfast cho phép cổng của switch có thể vào trạng thái Forwarding ngay lập tức khi link kết nối với cổng đó up lên. Tính năng portfast được sử dụng khi kết nối với PC tại access-layer. Portfast được bật lên chỉ khi ta chắc chắn rằng trên cổng đó không thể xảy ra lặp vòng. Ta bật portfast lên không có nghĩa là đã tắt STP trên cổng đó. Nếu có một switch mới bị cắm nhầm vào cổng có tính năng portfast thì loop có thể xảy ra vì portfast cho phép chuyển cổng sang trạng thái forwarding ngay lập tức. Trong khi đó để phát hiện ra vòng lặp thì phải trải qua một khoảng thời gian và các trạng thái khác nhau thì cổng mới đưa vào sử dụng bình thường được. BPDUGuard sẽ cấm không cho switch lạ trao đổi BPDU với mạng. Khi switch nhận được BPDU trên portfast với tính năng BPDUGuard thì cổng sẽ bị đưa vào trạng thái errdisable. Muốn sử dụng lại cổng này thì phải cho phép cổng một cách thủ công hoặc đợi khoảng thời gian errdisable hết hạn.
+Mặc định, tính năng BPDU guard bị khóa trên tất cả các Port của switch.Ta có thể cấu hình BPDU ở mode Global của switch , sẽ tác động lên tất cả các Port của switch chỉ bằng 1 câu lệnh.
+Switch (config)#spanning-tree portfast bpduguard default
+ngoài ra , ta cũng có thể tắt hoặc mở tính năng BPDU guard trên từng Port:
+Switch (config_if)#[no] spanning-tree bpduguard enable
+Bạn không nên cấu hình BPDU guard cho Uplink port vì gói BPDU sẽ được nhận và lập tức Port sẽ chuyển sang chế độ errdisable.Điều này sẽ làm cho Port đó không thể sử dụng trong mạng.
+
+II.7.4 Chống lại việc mất đột ngột những gói BPDU:
+Gói tin BPDU được sử dụng như thăm dò để tìm hiểu về một cấu trúc liên kết mạng. Khi các switch tham gia trong một cây STP hội tụ BPDUs vẫn phải được gửi bằng Root Switch và phải được chuyển tiếp của mỗi switch khác trong STP. Các cấu trúc liên kết của STP toàn vẹn sau đó phụ thuộc vào một dòng chảy liên tục và thường xuyên của BPDUs từ gốc. Điều gì xảy ra nếu một switch không nhận được BPDUs một cách kịp thời hoặc khi nó không nhận nào? Việc chuyển đổi có thể xem là tình trạng như là chấp nhận được, có lẽ là một chuyển đổi ngược dòng hoặc một liên kết đến RootSwitch chết. Trong trường hợp đó, hệ thống mạng phải có đường khác dự phòng, do đó bị chặn cổng cuối cùng có thể được bỏ chặn lại.
+Tuy nhiên, nếu sự vắng mặt của BPDUs thực sự là một sai lầm và BPDUs không được nhận ngay cả mặc dù không có thay đổi mô hình mạng, vòng lặp (loop) có thể dễ dàng hình thành. Cisco đã bổ sung thêm hai tính năng giúp STP phát hiện và ngăn chặn sự mất mát bất ngờ của BPDU: Loop Guard và UDLD (Unidirectional Link Detection )
+II.7.5 LoopGuard
+Giả sử rằng một cổng Switch đang nhận được BPDUs và các cổng switch là ở trạng thái Blocking. Các cổng đến đường dự phòng – nó sẽ bị ngăn chặn bởi vì nó không phải là một cổng gốc cũng không phải là một cổng chỉ định. Nó sẽ vẫn ở trạng thái Blocking miễn là một dòng chảy ổn định của BPDUs nhận được.
+Nếu BPDUs đang được gửi qua một liên kết nhưng các dòng chảy của BPDUs dừng lại vì lý do nào đó, người cuối cùng được biết đến BPDU được giữ cho đến khi Max Age timer hết hạn. Sau đó là BPDU bị xóa, và Switch hiểu rằng ở đó không còn là cổng cần phải chặn . Sau cùng, nếu không có BPDUs được nhận nên không cần khóa cổng đang có thiết bị kết nối nữa.
+Switch sau đó đưa các cổng sang trạng thái chuyển tiếp dữ liệu mạng và bắt đầu xảy ra hiện tượng loop. Trong trạng thái cuối cùng Port,nó sẽ trở thành một cổng Designated và bắt đầu chuyển tiếp hoặc gửi BPDUs xuống hạ lưu, khi nó thực sự cần phải nhận được BPDUs từ thượng nguồn.
+Để ngăn chặn tình trạng này, bạn có thể sử dụng tính năng bảo vệ vòng STP. Khi được kích hoạt, bảo vệ vòng lặp theo dõi những hoạt động BPDU trên cổng nondesignated. Trong khi BPDUs được nhận, cổng cho phép cư xử bình thường. Khi BPDUs đi mất tích, loop-guard di chuyển các cổng vào trạng thái loop-inconsistent . Các cổng được chặn ở thời điểm này để ngăn ngừa một vòng từ từ hình thành và để giữ nó trong vai trò nondesignated.
+Khi thực hiện LoopGuard :trên IOS Cisco bạn sẽ thấy thông báo sau:
+
+
+
+Theo mặc định, tính năng LoopGuard tắt trên tất cả các cổng .Bạn có thể mở tính năng này trên mode Global cho tất cả các cổng hoặc trên từng cổng :
+Switch(config)#spanning-tree loopguard default
+Switch(config_if)# [No] spanning-tree guard loop
+Mặc dù loop guard được cấu hình trên từng Port nhưng nó lại hoạt động theo từng Vlan hay nói cách khác, khi 1 Port bị khóa, không có nghĩa là nó bị khóa hoàn toàn mà nó chỉ bị khóa trên Vlan tương ứng .
+So sánh mô hình 3 Switch khi chưa chạy LoopGuard và khi đã chạy LoopGuard
+STP không có LoopGuard
+
+STP chạy LoopGuard
+
+
+
+II.7.6 Tính năng UDLD
+Giao thức Unidirectional Link Detection (UDLD) cho phép các thiết bị đang kết nối với nhau bằng cáp quang hoặc cáp đồng có thể quan sát và phát hiện được các vấn đề về trạng thái kết nối vật lý của hệ thống cáp khi có hiện tượng kết nối theo một hướng duy nhất (Unidirectional Link) xảy ra.
+
+Bình thường, dữ liệu trên các đường cáp quang hoặc cáp đồng được truyền theo hai chiều. Với cáp quang, có thể một sợi truyền và một sợi sẽ nhận tín hiệu. Nếu, vì một lý do nào đó ở mức vật lý, chỉ một sợi quang thực hiện truyền tín hiệu, sợi còn lại bị hỏng hóc và không thực hiện đúng chức năng, dòng dữ liệu sẽ chỉ được truyền theo một chiều một cách chập chờn.
+Một hệ quả của vấn đề nêu trên là thiết bị switch ở đầu bên kia không nhận được các dạng frame cần thiết, ví dụ như BPDU chằng hạn, switch đầu bên kia sẽ nghĩ rằng, nó cần thiết phải chuyển port đó (là port gắn cáp quang và không nhận được BPDU) sang trạng thái forwarding.
+Lúc này, hiện tượng bridging loop có thể xảy ra do thuật toán Spanning tree đã quyết định sai trạng thái của port của switch (lẽ ra vẫn nên tiếp tục blocking nhưng switch lại quyết định chuyển sang forwarding).
+Hiện tượng Unidirectional link này gây ra nhiều hệ quả khác nhau không có lợi cho môi trường LAN, bao gồm cả việc gây ảnh hưởng đến khả năng chống loop trong giao thức spanning-tree.
+Khi hiện tượng Unidirectional Link được phát hiện, tính năng UDLD sẽ shutdown các cổng của switch bị ảnh hưởng, và phát ra cảnh báo cho các người dùng biết được tình trạng hiện tại của interface này.
+UDLD là giao thức hoạt động tại lớp 2 nhưng lại làm việc và giúp phát hiện những vấn đề ở lớp physical với các thiết bị lớp một để có thể xác định trạng thái kết nối vật lý của một kết nối nào đó.
+Tại lớp 1, các phương thức tự động thương lượng (autonegotiation) đảm trách các tín hiệu vật lý và phát hiện lỗi. Khác với quá trình autonegotiation, UDLD thực thi các tác vụ mà các phương thức tự động dò tìm autonegotiation không thể thực thi. Ví dụ như phát hiện tình trạng hiện tại của các neighbor và shutdown các “misconnected interface”.
+Khi ta bật lên đồng thời “autonegotiation” và UDLD, lớp 1 và 2 sẽ làm việc cùng nhau để ngăn ngừa các hiện tượng kết nối theo một hướng về mặt vật lý và luận lý.
+Hiện tượng Unidirectional Link xảy ra khi có “local device” nào đó phát ra các tín hiệu và được tiếp nhận bởi “neighbor” nhưng “local device” này lại không thể tiếp nhận các tín hiệu do “neighbor” này trả về.
+Nếu một trong các mạch quang trong một cặp dây bị ngắt , khi mà autonegotiation đã được active, kết nối không ở trạng thái UP. Nếu cặp dây cáp quang này hoạt động bình thường ở lớp 1, thì giao thức UDLD tại lớp 2 sẽ xác định các cáp quang này có được kết nối đúng hay không và các traffic có đang truyền theo cả hai hướng giữa các neighbor hay không.
+
+Quá trình Autonegotiation không thể thực thi khả năng này bởi vì quá trình negotiation hoạt động ở lớp 1.
+
+
+§ Về cơ chế hoạt động và cách cấu hình của UDLD.
+Switch truyền các gói UDLD tới các thiết bị láng giềng neighbor theo chu kỳ khi giao thức UDLD vừa được bật lên. Các thiết bị ở cả hai đầu kết nối phải hổ trợ giao thức UDLD để giao thức này có thể định nghĩa, nghĩa là, bạn phảicấu hình UDLD ở cả hai thiết bị ở hai đầu. Mặc định, giao thức UDLD được tắt trên giao diện kết nối bằng cáp đồng để tránh việc gửi các traffic điều khiển không cần thiết.
+
+Switch B có thể nhận được các traffic từ Switch A trên interface kết nối cụ thể. Tuy nhiên Switch A không thể nhận được traffic từ Switch B trên cùng interface tương tự. UDLD phát hiện ra vấn đề này và disable interface này.
+Các cấu hình mặc định trên Switch Cisco 4500 series:
+
++ ULDL global enable state : Globally disabled
++ UDLD per-interface enable state for fiber-optic media: Enabled
++ UDLD per-interface enable state for Twisted-pair (cooper) media : Disabled
+
+Để Bật giao thức UDLD toàn cục cho tất cả các interface quang, dùng lệnh sau:
+
+Switch(config)# [no] udld enable
+
+Chú ý: dòng lệnh này chỉ cấu hình các interface quang để chạy giao thức UDLD.
+
+Bật giao thức UDLD trên interface cụ thể:
+
+Switch(config-if)# udld enable
+
+Để xem lại cấu hình:
+Switch# show udld interface
+
+Disable UDLD trên các interface không phải là giao diện quang(twisted pair,…):
+Switch(config-if) no udld enable
+
+Để xem lại cấu hình:
+Switch# show udld interface
+
+Chú ý: trên các interface quang, dòng lệnh no udld enable sẽ trả lại cấu hình
+của các interface thành udld enable. Disable UDLD trên các interface quang:
+Switch (config-if)# udld disable
+Resetting các interface bị shutdown bởi UDLD:
+Switch# udld reset
+II.7.7 Sử dụng BPDU Filter để tắt tính năng STP trên 1 Port:
+Thông thường, STP hoạt động trên tất cả các cổng trong một nỗ lực để loại bỏ các vòng lặp trước khi nó có thể hình thành. BPDUs được gửi vào tất cả các cổng , kể cả trường hợp PortFast đã được kích hoạt. BPDUs cũng có thể được nhận và xử lý nếu có được gửi qua thiết bị chuyển mạch lân cận. Bạn chỉ nên cho phép STP chạy trên một switch để ngăn chặn vòng lặp. Tuy nhiên, trong trường hợp đặc biệt khi bạn cần phải ngăn chặn BPDUs không được gửi đi hoặc xử lý vào một hoặc nhiều cổng của switch, bạn có thể sử dụng một cách hiệu quả lọc BPDU và vô hiệu STP vào các cổng.
+Theo mặc định, BPDU lọc bị vô hiệu hóa trên tất cả các cổng switch. Bạn có thể cấu hình BPDU lọc như là một toàn cầu mặc định, ảnh hưởng đến tất cả các cổng với lệnh cấu hình toàn cầu sau:
+
+Switch(config)#spanning-tree portfast dpdufilter default
+Hoặc trên từng cổng :
+Switch(config_if)#spanning-tree dpdufilter {enable||disable}
+
+Hãy rất cẩn thận để cho phép lọc BPDU chỉ trong trường hợp điều khiển mà bạn
+hoàn toàn chắc chắn rằng một cổng chuyển đổi sẽ có một máy chủ kết nối và có một vòng lặp sẽ không thể tồn tại. Kích hoạt tính năng lọc BPDU chỉ khi các thiết bị kết nối không thể cho phép BPDUs được chấp nhận hoặc gửi đi. Nếu không, bạn nên cho phép STP để hoạt động trên các cổng switch để phòng ngừa.
+
+Ø Nghe
+Đọc ngữ âm
+Ø Các Câu lệnh liên quan đến STP guard :
+Hiển thị các Port ở trạng thái inconsistentports:
+Switch#show spanning-tree inconsistentports
+Tìm hiểu nguyên dân dẫn đến trạng thái inconsistentports :
+Switch#show spanning-tree interface mod/num
+Hiển thị thông tin về BPDU guard , BPDU filter và LoopGuard:
+Switch#show spanning-tree summary
+Hiển thị trạng thái UDLD
+Switch#show udld [mod/num]
+Một số tính huống thực tế đối với STP
+
+Một số tính năng mở rộng hỗ trợ cho STP
+
+II.5 Một số tính năng mở rộng hỗ trợ cho STP
+Uplink Fast , BackBone Fast , LoopGuard, BPDU Guard, BPDU Filter
+II.5.1 Uplink Fast :
+Đây là một tính năng giúp cho các Switch trong spanning-tree đáp ứng được nhanh hơn nếu đường uplink đi lên phía root bridge bị down
+
+
+· Ví dụ từ hình vẽ, xét Switch E
+- Nếu Rootport của SWE bị down (uplink bị down), thì phải mất 50s sau (Max-age + 2xForward Delay) cổng bên trái ở trạng thái blocking mới chuyển sang trạng thái forwarding để các PC bên phải có thể tiếp tục giao tiếp ở trên mạng
+- Nếu SWE được kích hoạt tính năng uplink-fast, khi xảy ra hiện tượng uplink bị down thì cổng bên trái sẽ chuyển sang trạng thái forwarding trong khoảng thời gian rất ngắn, khoảng 3s. Rõ ràng là hiệu quả hơn nhiều
+- Một số lưu ý đối với uplinkfast:
++ Không thể cấu hình tính năng này trên root bridge, chỉ cấu hình được trên switch có cổng blocking
+
++ Trong mô hình 3 lớp, chỉ nên cấu hình tính năng này trên switch access, ko làm cho lớp distribution và lớp core
++ Khi SW mở cổng blocking thì priority sẽ bị đẩy cao lên 49152 để tránh ko bị làm root bridge, cost của đường này cũng sẽ bị tăng lên một giá trị đặc biệt là 3000. Có thể nói SWE lúc này chỉ cung cấp được truy cập cho các PC chứ không có ưu thế gì khi bầu cử spanning-tree so với các switch khác
++ Tiếp theo chúng ta quan sát tiếp trên SWD. Trước khi sự cố xảy ra, để các pc bên trái giao tiếp với các pc bên phải, SWD sẽ chuyển thông tin này lên cho SWB, nói cách khác bảng CAM trên SWD sẽ có nội dung MAC address của các PC bên phải là ascociate với port bên trên. Thông tin về các MAC address này sẽ được lưu 5 phút (300s) nếu các PC bên phải không còn gửi tin đến SWD nữa. Sau khi sự cố xảy ra, SWE up cổng bloking lên sau 3s, lúc này SWE sẽ gửi một bản tin đặc biệt có địa chỉ đích là địa chỉ multicast đặc biệt 0100.0ccd.cdcd và SWD sẽ phải xử lý bản tin này. Nội dung của bản tin này chính là các địa chỉ MAC có trong bảng CAM của SWE. Qua quá trình này SWD sẽ nhanh chóng cập nhật được bảng CAM và ghi lại MAC address của các PC bên phải lúc này sẽ được ascociate với port bên phải
++ Khi cấu hình uplinkfast, câu lệnh gõ ở mức global config, không thể kích hoạt này cho spanning-tree của vlan đơn lẻ
+
+cấu hình :
+(config)#spanning-tree uplinkfast àkích hoạt chức năng Uplink Fast
+(config)#spanning-tree uplinkfast max-limit-rate ….. xác định số frame multicast có thể gởi trong 1s .Nhận giá trị từ 0 – 32000 gói /giây. Mặc định là 150 .Nếu =0 có nghĩa là không có gói update, đây là lý do STP hội tụ chậm vì không update kịp thời.
+Câu lệnh show tính năng Uplink fast
+
+
+II.5.2 BackBone Fast:
+BACKBONEFAST giúp cho switch đang có cổng bị BLK sẽ phản ứng nhanh hơn trong trường hợp remote-link bên switch bên kia bị down
+
+
+Quan sát hình vẽ dưới, khi chưa có backbonefast kích hoạt
+
+
+Trong hình vẽ này R làm root, S đang có port P bị khóa
+1- Nếu đường L1 bị down (đường này được coi là remote-link đối với switch S), B ko còn đường lên root, nên nó tự cho mình làm root và gửi BPDU sang cho S
+2- S từ trước đến giờ vẫn nhận được BPDU từ root R tốt nhất, nên khi nhận được BPDU tự xưng root của B, nó thấy BPDU của B kém hơn so với của R nên nó sẽ bỏ qua thông tin từ B trong khoảng thời gian max-age là 20s.
+3- Sau khi hết 20s, port P được chuyển sang trạng thái LSN, S bắt đầu gửi bản tin BPDU có root là R sang cho B và lúc này B phải chịu thua
+4- Port P dần chuyển lên FWD sau khi trải qua trạng thái LRN nữa, tổng cộng từ BLK lên FWD mấtm max-age + 2 Forward Delay = 50s. Còn Switch B thì có rootport mới
+
+Khi kích hoạt backbonefast thì chúng ta sẽ tiết kiệm được 20s max-age khi port P của switch S chuyển từ BLK lên FWD
+
+
+1- giống như trên
+2- khi switch S nhận được bạn tin tự xưng root của B, nó sẽ nghi ngờ việc này và gửi bản tin đặc biệt RLQ (root link query) ra tất cả các cổng đang mở mà nó có để truy vấn sự tồn tại của root R suốt từ đầu đến giờ
+3- Root R vẫn tồn tại và là switch có thông số tốt nhất nên nó trả lại bản tin RLQ respone cho S
+4- S sau khi được confirm sẽ bỏ qua 20s max-age mà chuyển port P sang trạng thái LSN ngay, dần dần mất 30s (2 lần forward delay) để lên FWD
+5- Switch B nhận được BPDU từ S như thông thường và có root port mới
+
+Câu lệnh cấu hình :
+Phải được cấu hình trên tất cả các con switch trong hệ thống .Đối với STP truyền thống 802.1D thì cần phải cấu hình, sang các dạng mở rộng cùa STP như RSTP 802.1w hoặc MST thì không cần vì đã tích hợp sãn.
+Switch (config )#spanning-tree backbonefast .
+Show tính năng của BackBoneFast : switch # show spanning-tree backbonefast .
+
+ 
+
+RSTP ( Rapid Spanning Tree Protocol ) 802.1w
+
+III RSTP ( Rapid Spanning Tree Protocol ) 802.1w (theo IEEE )
+III.1 Giới thiệu
+Chuẩn IEEE 802.1D Spanning Tree Protocol được thiết kế để giữ cho một hệ thống các Switch không bị Loop và tự động thích nghi trước những thay đổi của mạng. Một sự thay đổi cấu trúc liên kết thông thường phải mất 30 giây, với một cổng chuyển từ trạng thái Blocking sang trạng thái Forwarding mất hai lần khoảng thời gian của bộ đếm thời gianForward Delay. Khi công nghệ đã được cải thiện, 30 giây trở thành một khoảng thời gian dài không thể chịu đựng để chờ đợi cho một mạng hội tụ và thích nghi khi có 1 vấn đề xảy ra.
+Các tiêu chuẩn IEEE 802.1w được phát triển để sử dụng khái niệm 802.1D với điểm chính là thực hiện kết quả hội tụ nhanh hơn nhiều. Điều này cũng được gọi là Rapid Spanning Tree Protocol (RSTP), trong đó xác định cách thức chuyển mạch phải tương tác với nhau để giữ cho các cấu trúc liên kết mạng tránh bị loop- một cách rất hiệu quả.
+Như với 802.1d, chức năng cơ bản của RSTP có thể được áp dụng như một trường hợp một hoặc nhiều trường hợp. Điều này có thể được thực hiện bằng cách sử dụng RSTP là cơ chế cơ bản đối với Cisco-sở hữu độc quyền Per-VLAN Spanning Tree Protocol (PVST +). Sự kết hợp đó được gọi là Rapid PVST + (RPVST ).
+III.2 Hoạt động của RSTP
+RSTP hoạt động cũng gần như STP truyền thống ,nhưng RSTP đưa ra những vai trò của Port và trạng thái của Port khác với STP.Đồng thời RSTP tích hợp các tính năng UplinkFast, Backbonefast được tích hợp vào trong hoạt động của mình luôn.
+III.2.1 Vai trò và chức năng của các Port trong RSTP
+
+
+
+
+
+Chi tiết về Port Role của RSTP :
+Role là một biến được gán cho một cổng nhất định. Root Port và Designated Port vẫn giữ hoạt động như cũ trong khi vai trò của Blocking Port được chia thành các Backup Port và Alternative Port. Các thuật toán Spanning Tree (STA) xác định vai trò của một cổng dựa trên đơn vị dữ liệu BPDU . Để đơn giản hóa vấn đề, điều để nhớ về một BPDU là luôn luôn có một phương pháp để so sánh với bất kỳ hai của chúng và quyết định xem là một trong 2cái nào sẽ là hữu ích hơn hơn khác. Điều này là dựa trên giá trị được lưu trữ trong các BPDU và đôi khi trên cổng mà chúng được nhận.
+Root Port :
+Các cổng tiếp nhận BPDU tốt nhất trên cầu là Root Port. Đây là cổng mà có đường đi (Root Patch Cost ) thấp nhất để đi đến Root Switch. Root Port sẽ được lựa chọn trên các Switch không phải Root Switch .Root Switch sẽ gủi BPDUs hữu ích hơn so với những switch khác gủi . Root Switch là switch duy nhất trên mạng mà không có một Root Port. Tất cả switch khác nhận BPDUs trên ít nhất một cổng.
+
+ 
+
+ 
+
+
+
+Designated Port :
+Cổng A được chỉ định nếu nó có thể gửi các BPDU tốt nhất trên phân đoạn mạng mà nó được kết nối cùng các switch khác. Trong một phân đoạn nhất định, chỉ có thể có một con đường về phía Root Switch. Nếu có hai-điều đó có nghĩa là có một vòng lặp trong mạng. Tất cả các swtich kết nối với nhau lắng nghe các BPDUs của nhau sau đó đồng Switch có thể gửi các BPDU tốt nhất là switch ưu tiên dành cho phân đoạn mạng này. Port trên Switch đó sẽ là Desginated Port.
+
+
+
+Alternative và Backup Port :
+
+Đây là hai cổng có vai trò tương ứng với các trạng thái Blocking của 802.1D.
+Một cổng chặn được định nghĩa là không phải Root Port hoặc Designated Port
+Một cổng nhận được một BPDU bị hữu ích hơn so với cái nó gửi ra trên phân đoạn mạng của nó. Hãy nhớ rằng một cổng phải nhận các gói tin BPDU để ở lại trạng thái Blocking . RSTP giới thiệu hai vai trò cho mục đích này.
+
+Alternative Port nhận những gói tin BPDU hữu ích hơn từ switch khác là Port bị khóa .Như hình vẽ :
+
+
+
+Backup Port thì nhận những gói tin BPDU tốt nhất từ chính nó :
+
+
+
+Sự phân biệt này đã được thực hiện trong nội bộ bên trong 802.1d. Đây thực chất là làm thế nào chức năng Cisco UplinkFast hoạt động. Lý do là một Cổng thay thế cung cấp một con đường thay thế để các RootSwitch và do đó có thể thay thế các RootPort nếu nó không thành công. Tất nhiên, một cổng sao lưu dự phòng để cung cấp kết nối cùng phân khúc và không thể đảm bảo một kết nối thay thế cho các RootSwtich . Do đó, loại trừ khỏi nhóm uplink.
+
+Kết quả là, RSTP tính toán các mô hình mạng cuối cùng cho Spanning Tree có sử dụng các tiêu chuẩn như 802.1D. Hoàn toàn không có thay đổi trong cách ưu tiên các switch và các Port. Tên gọi “Blocking” được sử dụng cho trạng thái Discarding do Cisco thực hiện trong CatOS bản 7.1 và sau đó hiển thị trạng thái Listening và Learning . Điều này cho phép thông tin nhiều hơn về một cổng IEEE hơn tiêu chuẩn yêu cầu. Tuy nhiên, tính năng mới là bây giờ có một sự khác biệt giữa vai trò của giao thức xác định cho một cổng và trạng thái hiện tại của nó. Ví dụ, bây giờ là hoàn toàn hợp lệ cho một cổng được ở trạng thái Designated và Blocking cùng một lúc. Trong khi điều này thường xảy ra trong thời gian rất ngắn thời gian, nó đơn giản chỉ có nghĩa là cổng này đang ở trong một trạng thái chuyển tiếp đối tới trạng thái Forwarding .
+
+III.2.2 Sự thay đổi trong gói tin BPDU
+Rất ít thay đổi về gói tin BPDU trong RSTP. Chỉ có thay đổi về hai bit cờ, thay đổi Topology (TC) và TC Xác Nhận (TCA), được định nghĩa trong 802.1D . Tuy nhiên, RSTP bây giờ sử dụng tất cả 6 bit
+
+Một thay đổi quan trọng là các BPDU RSTP bây giờ là loại 2, phiên bản 2. Điều này có nghĩa là các switch chạy STP phải bỏ các gói BPDU mới này. Sự thay đổi này giúp cho các switch nhận biết rằng nó đang chạy RSTP hay STP.
+
+
+
+BPDUs được gửi đi tại mỗi cổng switch tại Hello – timer, bất kể BPDUs được nhận được từ Root. Bằng cách này, bất kỳ chuyển đổi bất cứ nơi nào trong mạng có thể đóng một vai trò tích cực trong duy trì vận hành mô hình mạng . Switch cũng có thể mong đợi để nhận BPDUs thường xuyên từ láng giềng. Khi ba BPDUs được bỏ qua trong một hàng, láng giềng được coi là Down, và tất cả thông tin liên quan đến Port đấu với láng giềng ngay lập tức “Age out “. Điều này có nghĩa rằng một chuyển đổi có thể phát hiện một thất bại láng giềng trong ba lần khoảng thời gian Hello-timer =6s thay vì phải đợi đến 20 s (Max Age Timer )của STP.
+Bởi vì phân biệt BPDU của RSTP với BPDUs của STP 802.1D , nó có thể cùng tồn tại với thiết bị chuyển mạch vẫn còn sử dụng 802.1D . Mỗi Port nỗ lực để hoạt động theo STP BPDU được nhận. Ví dụ, khi một BPDU 802.1d (phiên bản 0) được nhận vào một cổng, cổng đó bắt đầu hoạt động theo các quy tắc 802.1D.
+
+Tuy nhiên, mỗi cổng có một biện pháp mà khóa giao thức trong sử dụng, trong trường hợp từ cả hai BPDUs 802.1d và RSTP được nhận trong một khoảng thời gian ngắn. Điều này có thể xảy ra nếu các thiết bị chuyển mạch trong một mạng được đượ’c chuyển đổi từ các loại hình STP với nhau. Thay vì “flapping” hoặc “toggling” các loại STP trong một di chuyển, switch nắm giữ các loại giao thức trong thời gian một thời gian di chuyển chậm trễ. Sau khi bộ đếm thời gian này hết hạn, cổng là sẽ có thể thay đổi giao thức nếu cần thiết.
+
+ 
+
+RSTP Đồng bộ hóa
+
+Đoàn Minh Tuấn & Hồ Vũ
+
+III.4 Đồng bộ hóa
+Để tham gia vào quá trình RSTP hội tụ, một switch phải quyết định trạng thái của mỗi cổng của nó. Nonedge –Port bắt đầu bằng trạng thái “Discarding”. Sau khi BPDUs được trao đổi giữa các switch và của láng giềng, Rootswitch có thể được xác định. Nếu một cổng nhận được một BPDU tốt hơn từ một người láng giềng, Port trở thành Root Port.
+Đối với mỗi cổng nonedge, Switch sẽ trao đổi gói tin “ proposal-agreement “ để quyết định trạng thái mỗi đường link. Mỗi Switch sẽ xem như Port của nó đóng vai trò Designated Port cho phân đoạn mạng đó , và quảng bá gói tin “Proposal” nằm trong BPDU tới láng giềng của nó.
+Khi một switch nhận gói tin “ Proposal “trên 1 Port , những hành động của Switch có thể xảy ra :
+1. Nếu đề nghị của người gửi có một BPDU cấp trên, việc chuyển đổi tại bản thân switch nhận ra rằng người gửi phải phải là Designated Switch (có các cổng là Designated port) và có cổng riêng của nó phải trở thành Root Port mới.
+2. Trước khi đồng ý switch đồng ý với bất cứ điều gì, nó phải đồng bộ hóa tự với mô hình mạng.
+3. Tất cả các nonedge Port ngay lập tức được chuyển vào trạng thái Discarding để tránh xuất hiện vòng lặp.
+4. Một thông báo thỏa thuận (một BPDU cấu hình) được gửi trả lại cho người gửi, chỉ ra rằng switch đồng ý với sự lựa chọn cổng mới được chỉ định là Designated Port. Điều này nói cho người gửi rằng switch đang trong quá trình đồng bộ hóa bản thân.
+5. Cổng gốc ngay lập tức được chuyển sang trạng thái Forwarding. Các cổng của người gửi cũng ngay lập tức có thể bắt đầu chuyển tiếp.
+6. Đối với mỗi cổng nonedge hiện đang trong tình trạng Discarding , một thông báo đề nghị được gửi tới láng giềng tương ứng.
+7. Một thông báo thỏa thuận được mong đợ và nhận được từ một láng giềng trên một cổng nonedge.
+8. Cổng nonedge ngay lập tức được chuyển sang trạng thái Forwarding.
+
+
+· Chú ý rằng sự hội tụ RSTP bắt đầu với một switch gửi tin nhắn đề nghị. Những người nhận đề xuất phải đồng bộ hóa bản thân bằng cách có hiệu quả cô lập mình khỏi phần còn lại mô hình mạng. Tất cả các cổng nonedge bị chặn cho đến khi một tin nhắn đề nghị có thể được gửi đi, là nguyên nhân gây ra cho láng giềng gần nhất đồng bộ hóa bản thân mình. Điều này tạo ra một “làn sóng” di chuyển của Switch đồng bộ hóa, mà có thể nhanh chóng quyết định để bắt đầu chuyển tiếp vào các liên kết của họ chỉ khi các láng giềng của họ đồng ý. Hình minh họa trên cho thấy làn sóng đồng bộ hóa đi qua một mạng lưới ở ba khoảng thời gian kế tiếp. Cô lập các thiết bị chuyển mạch dọc theo làn sóng đi trong mô hình vốn đã ngăn cản hiện tượng Loop.
+· Quá trình hội tụ toàn bộ xảy ra nhanh chóng, với tốc độ của BPDU truyền, mà không có sử dụng bất kỳ bộ timer nào. Tuy nhiên, một cổng chỉ định sẽ gửi tin nhắn đề nghị có thể không nhận một thông báo thỏa thuận trả lời. Giả sử rằng các switch lân cận không hiểu hoặc RSTP có một vấn đề trả lời. Việc chuyển đổi gửi sau đó phải trở thành quá thận trọng và phải bắt đầu hoạt động theo nguyên tắc của 802.1D quy tắc cổng phải được chuyển qua Listerning-Learning-Forwarding.( sử dụng Forward delay timer =15s ).
+
+
+
+Nghe
+Đọc ngữ âm
+Quá trình đồng bộ hóa Của RSTP trong toàn Mạng.
+III.5 Sự thay đổi mô hình mạng trong RSTP
+
+· Khi một chuyển đổi 802.1D phát hiện một thay đổi trạng thái cổng (có thể Up hoặc down), nó báo cho Root Bridge bằng cách gửi thông báo thay đổi cấu trúc liên kết (TCN) BPDUs. Root Switch lần lượt phải thông báo thay đổi cấu trúc liên kết bằng cách gửi ra một thông báo TCN được chuyển tiếp đến tất cả các switch tại các miền STP.
+· RSTP phát hiện một cấu trúc liên kết thay đổi duy nhất khi một nonedge chuyển tiếp cổng để trạng thái Forwarding. Điều này có vẻ kỳ lạ bởi vì một trạng thái của đường link không được sử dụng như một sự thay đổi. RSTP sử dụng tất cả các phương pháp của nó để nhanh chóng ngăn cản hiện tượng Loop. Do đó, thay đổi cấu trúc liên kết được phát hiện chỉ để bảng MAC của switch có thể được cập nhật khi một máy ở sai port và chuyển sang 1 port khác.
+· Khi một sự thay đổi cấu trúc liên kết được phát hiện, một chuyển đổi phải tuyên truyền tin tức về sự thay đổi để switch khác trong mạng để có thể sửa các bảng MAC của họ . Quá trình này cũng tương tự như hội tụ và cơ chế đồng bộ hóa; thay đổi cấu trúc liên kết (TC) thông điệp tuyên truyền thông qua mạng trong một làn sóng ngày càng mở rộng.
+· BPDUs, với thiết lập bit TC của họ, được gửi ra tất cả các Port nonedge. Điều này được thực hiện cho đến khi các TC khi bộ đếm thời gian hết hạn, sau hai khoảng thời gian Hello.Thông báo này cho switch láng giềng của liên kết mới và thay đổi cấu trúc liên kết. Ngoài ra, tất cả các địa chỉ MAC được kết hợp với các nonedge Designated Port được xóa khỏi bảng(CAM) . Điều này làm cho các địa chỉ phải được học lại sau khi thay đổi, trong trường hợp máy tính bây giờ xuất hiện trên một link khác nhau. Tất cả các thiết bị chuyển mạch lân cận tiếp nhận các tin nhắn TC cũng phải tuôn ra các địa chỉ MAC học trên tất cả các cổng ngoại trừ một trong đó nhận được thông báo TC. Những thiết bị chuyển mạch sau đó phải gửi TC tin nhắn ra Port nonedge designated , và cứ tiếp tục như vậy.
+
+III.6 Cấu hình RSTP
+
+Theo mặc định , switch sẽ chạy pVST + (Spanning tree per Vlan ) sử dụng spanning-tree truyền thống 802.1D .Do đó, RSTP không thể sử dụng cho đến có một chế độ Spanning tree khác được chạy như RPVST + hoặc MST .
+
+Những thay đổi cấu hình chỉ liên quan đến RSTP ảnh hưởng đến cổng hoặc kiểu liên kết. Các loại liên kết được sử dụng để xác định cách chuyển đổi một thương lượng thông tin cấu trúc liên kết với láng giềng của nó.
+
+Để cấu hình một cổng như là một cổng edge RSTP, sử dụng câu lệnh sau đây:
+
+Switch(config_if)#spanning-tree portfast
+
+Theo mặc định, RSTP tự động quyết định rằng một cổng là một liên kết điểm-điểm nếu nó được hoạt động trong toàn chế độ toàn song công. Các cổng kết nối với switch khác thường toàn song công vì chỉ có hai thiết bị chuyển mạch vào liên kết. Tuy nhiên, bạn có thể ghi đè lên việc xác định tự động, nếu cần thiết. Ví dụ, một cổng kết nối đến switch khác có thể là một trong những hoạt động ở bán song công, vì lý do nào đó. Để ép cổng để hoạt động như một liên kết point-to-point, sử dụng cấu hình giao diện sau :
+Switch(config_if)# spanning –tree link-type point-to-point
+
+ 
+
+ 
+
+ 
+
+VPN NAT
+
+II.2. Cấu hình Router- Router VPN dùng 3DES và cơ chế khóa biết trước (pre-share key) với NAT
+
+Cấu hình host Headquarter
+
+hostname hq
+!
+username cisco123 password 0 cisco123
+username 123cisco password 0 123cisco
+!
+crypto isakmp policy 5
+hash md5
+authentication pre-share
+crypto isakmp key cisco123 address 10.64.20.45
+crypto isakmp key 123cisco address 0.0.0.0
+crypto isakmp client configuration address-pool local test-pool
+!
+crypto ipsec transform-set testset esp-des esp-md5-hmac
+mode transport
+!
+crypto dynamic-map test-dynamic 10
+set transform-set testset
+!
+crypto map test client configuration address initiate
+crypto map test client configuration address respond
+!
+crypto map test 5 ipsec-isakmp
+set peer 10.64.20.45
+set transform-set testset
+match address 115
+!
+crypto map test 10 ipsec-isakmp dynamic test-dynamic
+!
+interface FastEthernet0/0
+ip address 192.168.100.1 255.255.255.0
+no ip directed-broadcast
+ip nat inside
+duplex auto
+speed auto
+!
+interface Serial0/0
+ip address 10.64.10.44 255.255.255.0
+no ip directed-broadcast
+ip nat outside
+no fair-queue
+crypto map test
+!
+ip local pool test-pool 192.168.1.1 192.168.1.254
+ip nat inside source route-map nonat interface Serial0/0 overload
+ip classless
+ip route 0.0.0.0 0.0.0.0 10.64.10.43
+ip http server
+!
+access-list 110 deny ip 192.168.100.0 0.0.0.255 192.168.200.0 0.0.0.255
+access-list 110 deny ip 192.168.100.0 0.0.0.255 192.168.1.0 0.0.0.255
+access-list 110 permit ip 192.168.100.0 0.0.0.255 any
+access-list 115 deny ip any 192.168.100.0 0.0.0.255
+access-list 115 permit ip any any
+!
+route-map nonat permit 10
+match ip address 110
+
+Cấu hình host Internet
+
+hostname Internet
+!
+ip subnet-zero
+no ip domain-lookup
+!
+interface Ethernet0
+ip address 192.168.1.1 255.255.255.0
+
+interface Serial0
+ip address 10.64.20.42 255.255.255.0
+no fair-queue
+clockrate 64000
+!
+interface Serial1
+ip address 10.64.10.43 255.255.255.0
+clockrate 64000
+!
+ip classless
+ip route 10.64.10.0 255.255.255.0 Serial1
+ip route 10.64.20.0 255.255.255.0 Serial0
+
+Cấu hình host Branch
+
+hostname Branch
+!
+ip subnet-zero
+!
+crypto isakmp policy 5
+hash md5
+authentication pre-share
+crypto isakmp key cisco123 address 10.64.10.44
+!
+crypto ipsec transform-set testset esp-des esp-md5-hmac
+mode transport
+!
+crypto map test 5 ipsec-isakmp
+set peer 10.64.10.44
+set transform-set testset
+match address 115
+!
+interface Ethernet0
+ip address 192.168.200.1 255.255.255.0
+no ip directed-broadcast
+ip nat inside
+!
+interface Serial0
+ip address 10.64.20.45 255.255.255.0
+no ip directed-broadcast
+ip nat outside
+crypto map test
+!
+ip nat inside source route-map nonat interface Serial0 overload
+
+ip route 0.0.0.0 0.0.0.0 10.64.20.42
+!
+access-list 110 deny ip 192.168.200.0 0.0.0.255 192.168.100.0 0.0.0.255
+access-list 115 deny ip any 192.168.200.0 0.0.0.255
+access-list 115 permit ip any any
+route-map nonat permit 10
+match ip address 110
+
+End!
+
+Ghi chú: để có thể thử nghiệm VPN, phiên bản IOS cần là IPSec/DES.
+
+CÁC VÍ DỤ CẤU HÌNH VPN
+
+II.1. Cấu hình Router- Router VPN dùng 3DES và cơ chế khóa biết trước (pre-share key)
+
+Topology
+E0-(HQ-Router)-s0—–(Internet)——s0-(Remotesite1)—E0
+
+Sơ đồ địa chỉ:
+
+HeadQuater: E0: 10.1.1.1/24
+
+HeadQuater: S0: 134.50.10.1/24
+
+RemoteSite: S0 64.107.35.1/24
+
+RemoteSite: E0: 172.16.1.0/24
+
+Các bước cấu hình:
+Bước 1: Cấu hình hostname
+
+Router(config)# hostname hq-vpn-rtr
+
+Bước 2: Cấu hình khóa ISAKMP và địa chỉ của router đầu xa. Giai đoạn 1 của quá trình trao đổi key (phase 1) sẽ thiết lập đối tác (peer) của kết nối VPN. Sau khi khóa được trao đổi xong, một kênh riêng (tunnel) sẽ được thiết lập.
+
+Hq-vpn-rtr(config)# crypto isakmp key vnpro address 64.107.35.1
+
+Bước 3: Cấu hình ISAKMP.
+
+Trong chính sách ISAKMP này, bạn sẽ cấu hình các kiểu kiểm tra đăng nhập (authentication), hash và các giá trị định nghĩa thời gian hiệu lực của các khóa (lifetimes value). Hầu hết các thông số trong ISAKMP này là có giá trị mặc định và ta chỉ cần cấu hình cho những thông số khác với giá trị mặc định.
+
+Hq-vpn-rtr(config)# crypto isakmp policy 10
+
+Hq-vpn-rtr(config-isakmp)# encryption 3des
+
+Hq-vpn-rtr(config-isakmp)# authentication pre-share
+
+Bước 4: cấu hình access-list để chỉ ra loại traffic nào sẽ được mã hóa:
+
+Hq-vpn-rtr(config)# access-list 100 permit ip 10.1.1.0 0.0.0.255 172.16.1.0 0.0.0.255
+
+Bước 5: cấu hình transform-set. Trong bước này, bạn có thể chỉ ra các kiểu mã hóa và kiểu tổ hợp hash. Có nhiều chọn lựa cho các kiểu mã hóa của IPSec (DES, 3DES hoặc null); chọn lựa protocol (ESP, AH) và kiểu hash (SHA-1 hay MD5).
+
+Hq-vpn-rtr(config)# crypto ipsec tranform-set vnpro  esp-3des esp-sha-hmac
+
+Bước 6: Cấu hình crypto-map:
+
+Do ở bước trên, bạn có thể định nghĩa nhiều transform-set. Bước này sẽ chỉ ra tranform-set được dùng.  Tên của crypto map trong trường hợp này la netcg.
+
+Hq-vpn-rtr(config)# crypto map netcg 10 ipsec-isakmp
+
+Hp-vpn-rtr(config-crypto-map)# set peer 64.107.35.1
+
+Hp-vpn-rtr(config-crypto-map#set tranform-set vnpro
+
+Hp-vpn-rtr(config-crypto-map# match address 100
+
+Bước 7: cấu hình interface bên trong của router. Chú ý là nên cấu  hình các interface descriptions.
+
+Hq-vpn-rtr(config)# interface f0/1
+
+Hq-vpn-rtr(config-if)# description Inside network
+
+Hq-vpn-rtr(config-if)# ip address 10.1.1.1 255.255.255.0
+
+Bước 8: cấu hình interface outside:
+
+Hq-vpn-rtr(config)# interface s0/0
+
+Hq-vpn-rtr(config-if)# description outside network
+
+Hq-vpn-rtr(config-if)# ip addresss 134.50.10.1 255.255.255.252
+
+Hq-vpn-rtr(config-if)# crypto map netcg
+
+Cấu hình RemoteSite:
+
+Router(config)#hostname site1-rtr-vpn
+
+site1-rtr-vpn(config)# crypto isakmp key vnpro address 134.50.10.1
+
+site1-rtr-vpn(config)# crypto isakmp policy 10
+
+site1-rtr-vpn(config-isakmp)# encryption 3des
+
+site1-rtr-vpn(config-isakmp)# authentication pre-share
+
+site1-rtr-vpn(config)# access-list 100 permit ip 172.16.1.0 0.0.0.255 10.1.1.0 0.0.0.255
+
+site1-rtr-vpn (config)# crypto ipsec tranform-set vnpro  esp-3des esp-sha-hmac
+
+site1-rtr-vpn (config)# crypto map netcg 10 ipsec-isakmp
+
+site1-rtr-vpn (config-crypto-map)# set peer 134.50.10.1
+
+site1-rtr-vpn (config-crypto-map)# set transform-set netcg
+
+site1-rtr-vpn (config-crypto-map)# match address 100
+
+site1-rtr-vpn (config)# interface F0/1
+
+site1-rtr-vpn (config-if)# description inside network
+
+site1-rtr-vpn (config-if)# ip address 172.16.1.1 255.255.255.0
+
+site1-rtr-vpn (config)# interface s0/0
+
+site1-rtr-vpn (config-if)# description outside network
+
+site1-rtr-vpn (config-if)# ip address 64.107.35.1 255.255.255.252
+
+site1-rtr-vpn (config-if)# crypto map netcg
+
+Để kiểm tra kết nối VPN, bạn nên dùng phép thử ping mở rộng (extended ping)
+
+ 
+
+VPN
+
+I. GIỚI THIỆU:
+
+Công nghệ VPN cung cấp một phưong thức giao tiếp an toàn giữa các mạng riêng dựa trên hạ tầng mạng công cộng (Internet). VPN thường được dùng để kết nối các văn phòng chi nhánh (branch-office), các người dùng từ xa về văn phòng chính.
+
+Giải pháp VPN của Cisco dựa trên một vài sản phẩm khác nhau, bao gồm Pix Firewall, Cisco routers, VPN 3000/5000 Concentrator. Các protocol được dùng trong VPN bao gồm DES (Data Encryption Standard), Triple Des (3DES), IP Security (IPSec) và Internet key Exchange (IKE).
+
+I.1 IPSec:
+
+-         Protocol IPSec bao gồm 4 thành phần: thành phần mã hóa (Encryption), Security Association (làm nhiệm vụ trao đổi khóa), Data Integrity (tạm dịch: đảm bảo toàn vẹn dữ liệu) và Origin Authentication ( kiểm tra nguồn gốc dữ liệu).
+
+-         Cả hai giải thuật DES và 3DES đều được dùng cho việc mã hóa nêu trên. Chi tiết về DES xin xem mục 1.2. Chỉ có đầu gởi (sender) và đầu nh ận (receiver) có thể đọc được dữ liệu.
+
+-         Security Association (SA) thường được quản lý bời IKE.
+
+-         SA thường có thể dùng pre-share-key, RSA encryption hoặc các RSA signatures.
+
+-         SA có thể được cấu hình không cần dùng IKE nhưng cách này ít được dùng.
+
+-         Nhiệm vụ của thành phần Data Integrity là đảm bảo dữ liệu đã không bị thay đổi khi đi từ nguồn tới đích. Thành phần Data Integrity này dùng các giải thuật hash như Encapsulating Security payload (ESP), Authentication Header (AH), Message-Digest 5 (MD5) hoặc Secure Hash Algorithm 1 (SHA-1). Khi áp dụng ESP hoặc AH vào một gói IP, gói IP này có thể ( mặc dù không phải là luôn luôn) bị thay đổi.
+
+-         Origin Authentication là một option của IPSec. Thành phần này dùng digital signatures hoặc digital certificate.
+
+I.2. DES
+
+-         DES được dùng như một phương thức mã hóa dữ liệu dùng khóa riêng (private-key). Có hơn 72,000,000,000,000,000 khóa có thể dùng. Mỗi message có có một khóa mới được chọn ngẫu nhiên. Khóa riêng (private-key) của đầu gởi (sender) và đầu nhận (receiver) phải giống nhau.
+
+-         Giải thuật DES áp dụng khóa 56 bit cho mỗi block dữ liệu 64-bit. Quá trình mã hóa có thể hoạt động ở vài chế độ và bao gồm 16 lượt thao tác (operations). Mặc dù quá trình này đã là rất phức tạp, một vài công ty còn dùng 3DES, nghĩa là áp dụng DES ba lần.  3DES thì khó crack hơn là DES. Phương thức để crack DES có thể được tìm thấy trong quyển sách “Cracking DES: Secrets of Encryption Resesarch” của nhà xuất bản O’ Reilly’s.
+
+-         Trong tương lai, DES sẽ không được xem là chuẩn nữa. Cisco có kế hoạch hỗ trợ AES (Advance Encryption Standard) vào cuối năm 2001.
+
+I.3.Triple DES
+
+-         3DES dùng khóa có chiều dài là 168-bit.
+
+I.4. IKE
+
+-         IKE chịu trách nhiệm trao đổi khóa giữa hai VPN peers.
+
+-         IKE hỗ trợ 3 kiểu kiểm tra đăng nhập (authentication): dùng khóa biết trước (pre-share keys), RSA và RSA signature.
+
+-         IKE dùng hai protocol là Oakley Key Exchange và Skeme Key Exchange trong ISAKMP.
+
+-         Cơ chế pre-shared key thường được dùng trong những hệ thống nhỏ. Hạn chế của cơ chế này là việc yêu cầu cấu hình bằng tay (manual) cho mỗi đầu của kết nối VPN. Ngoài ra, cơ chế này được xem là không có khả năng mở rộng (scale).
+
+-         Cả hai kiểu kiểm tra đăng nhập còn lại RSA dùng public-key.
+
+ 
+
+Quá trình xác thực trong VPN
+
+Quá trình xác thực trong VPN bao gồm:
+
+• Xác thực client, nhóm VPN và mật mã nhóm.
+• Xác thực người dùng
+• Quản lý khóa , giải thuật DH, phương pháp luận
+• Cisco and IPSec message authentication (integrity) and condentiality
+
+III.3.5.1. Client Authentication, VPN Group Name, and Group Password
+
+Tên nhóm và mật mã của nhóm giúp đơn giản hóa một chính sách cần định nghĩa (policy) bởi vì một người dùng có thể là thành viên của một nhóm có chung một policy.
+
+Ví dụ, chỉ cần một thay đổi nhỏ cho một nhóm thì sẽ tác động đến tất cả các thành viên trong nhóm đó. Nhóm và người dùng là các thành phần chủ chốt trong quản lý bảo mật của VPN. Dùng nhóm sẽ đơn giản hóa vấn đề quản lý hệ thống. Bước đầu có thể cấu hình một nhóm cơ bản, sau đó đến từng nhóm riêng và sau cùng là cấu hình từng thành viên của nhóm.
+
+Khi cấu hình nhóm và người dùng, chỉ những thuộc tính khác với thuộc tính được định nghĩa trong nhóm cơ bản mới cần phải được định nghĩa. Tất cả các thuộc tính còn lại sẽ được kế thừa từ nhóm cơ bản.
+
+Tên nhóm và mật mã của nhóm được lưu trữ cục bộ trên server/concentrator. Khi client cố gắng kết nối vào, client phải cung cấp tên nhóm và mật mã để được công nhận như là một người dùng hợp lệ. Sau khi đã bắt tay thành công, một thông điệp có tên là:
+Peer Is a Cisco Unity Compliant Peer sẽ đươc tạo ra bởi cả hai thiết bị.
+
+Một đặc tính quan trọng khác nữa là nguời quản trị có thể kết hợp các người dùng khác nhau vào các nhóm khác nhau. Ví dụ, một vài người dùng có NAT được cấu hình. Khi nhóm người dùng này kết nối vào concentrator, concentrator phải nhận ra và thực hiện điều chỉnh cách xử lý gói tin bị NAT của nhóm người này. Concentrator phải xác định là người dùng đang được NAT hay không dựa trên tên nhóm và mật mã dùng khi kết nối.
+
+III.3.5.2. User/Identity Authentication
+
+Một trong những chức năng cơ bản của trao đổi khóa là đảm bảo quá trình trao đổi diễn ra giữa các nguồn tin cậy. Điều này yêu cầu quá trình kiểm tra danh xưng và nó liên quan đến đặc tính non-repudiation. Các danh xưng của người dùng sử dụng các chữ ký điện tự và các cơ chế xác thực. Phần mềm Cisco VPN hỗ trợ các chứng thực điện tử sau:
+
+• Simple Certicate Enrollment Protocol (SCEP) and certicates enrolled with
+Microsoft Internet Explorer.
+• Supported certification authorities (CAs) bao gồm Entrust, GTE Cybertrust,
+Netscape, Baltimore, RSA, Keon, Verisign, and Microsoft.
+• Entrust Intelligence Client support.
+• Smartcards are supported through MS CAPI (CRYPT_NOHASHOID), and include
+Activcard (Schlumberger cards), eAladdin, and Gemplus.
+
+Các cơ chế xác thực bao gồm:
+
+• RADIUS:
+— State/Reply Message attributes (token cards)
+— Security dynamics (RSA SecurID Ready)
+— Microsoft NT domain authentication
+— MSCHAPv2—NT password expiration
+— X.509v3 digital certicates
+
+• Extended Authentication (XAUTH) bên trong IKE: kiểm tra xác thực người dùng với IKE. XAUTH sẽ yêu cầu người dùng nhập username/mật mã. Thông tin này sau đó sẽ được kiểm tra thông qua việc sử dụng TACACS+/ RADIUS.
+
+
+
+ 
+
+Quá trình kiểm tra xác thực của người dùng diễn ra giữa pha 1 và pha 2. Nếu người dùng đã xác thực thành công, quá trình thiết lập pha 2 (IPSEC SA) cho phép người dùng có thể gửi dữ liệu an toàn trên mạng. Nếu người dùng thất bại trong quá trình xác thực, sẽ không có pha 2 nào được thiết lập và người dùng sẽ không thể gửi dữ liệu.
+
+ 
+
+ 
+
+Network Layer (Layer 3) VPNs
+
+III.3.3. Network Layer (Layer 3) VPNs
+
+Phần này sẽ mô tả các chủ đề sau:
+
+• Layer 3 tunneling
+• Security associations and security policy for Internet Key Exchange (IKE) and IPSec
+• Internet Security Association and Key Management Protocol (ISAKMP) and IPSec
+phases and modes
+• Fragmentation, path maximum transmission unit (MTU) discovery, and Internet Control Message Protocol (ICMP) processing
+• IPSec modes
+• IPSec protocols
+• Authentication in VPN
+
+III.3.3.1 Layer 3 Tunneling
+
+Các công nghệ VPN ở lớp 3 được thiết kế để hoạt động ở lớp network của mô hình OSI. Một cách tiêu biểu, các công nghệ VPN này dùng các giao thức IP như là giao thức ở lớp networl và nó có thể bao gồm các L2 VPN như Multiprotocol Label Switching (MPLS) hoặc IPSec. Một IP tunnel hoạt động như một kênh đi xuyên suốt một mạng trục IP và traffic được gửi trên tunnel sẽ không thể nhận biết được bởi hạ tầng mạng IP bên dưới. Kết quả là, mạng trục IP có thể được dùng như một công nghệ ở lớp datalink. Có rất nhiều cơ chế tunneling tồn tại bởi vì Layer 3 tunnel không phải là một công nghệ mới.
+Thật ra, một vài giao thức không phải là tunneling protocol chẳng hạn như IP/IP, GRE và L2TP.
+
+Ban đầu, IPSEc được xem như là một mở rộng của Ipv4 với các đặc điểm bảo mật được thêm vào. Ở hiện tại, IPSec là một khung chuẩn cho các chuẩn mở để đảm bảo vấn đề giao tiếp an toàn trên mạng IP. IPSec dựa trên một kiến trúc được mô tả trong RFC 2401.
+IPSec VPN dùng các dịch vụ được định nghĩa trong IPSec để đảm bảo tính toàn vẹn dữ liệu, tính nhất quán, tính bí mật và xác thực của truyền dữ liệu trên một hạ tầng mạng công cộng.
+
+III.3.3.2 Security Associations and Security Policy for IKE and IPSec
+
+IPSec hoạt động dựa trên mô hình ngang hàng (peer-to-peer) hơn là mô hình client/server. Security Association (SA) là một qui ước giữa hai bên trong đó thúc đẩy các trao đổi giữa hai bên giao tiếp. Mỗi bên giao tiếp (có thể là thiết bị, phần mềm) phải thống nhất với nhau về các chính sách hoặc các qui tắc bằng cách sẽ dò tìm các chính sách này với đối tác tìm năng của nó.
+
+Có hai kiểu SA: ISAKMP SA (còn được biết đến với tên gọi là IKE Sas) và IPSec SA. IKE SA là quá trình hai chiều và cung cấp một kênh giao tiếp bảo mật giữa hai bên. Thuật ngữ ‘hai chiều’ có ý nghĩa là khi đã được thiết lập, mỗi bên có thể khởi tạo chế độ QuickMode, Informational và NewGroupMode. IKE SA được nhận ra bởi các cookies của bên khởi tạo, được theo sau bởi các cookies của trả lời của phía đối tác. Thứ tự các cookies được thiết lập bởi phase 1 sẽ tiếp tục chỉ ra IKE SA, bất chấp chiều của nó. Chức năng chủ yếu của IKE là thiết lập và duy trì các SA. Các thuộc tính sau đây là mức tối thiểu phải được thống nhất giữa hai bên như là một phần của ISAKMP SA:
+
+• Encryption algorithm
+• Hash algorithm
+• Authentication method
+• Information about the group required to perform the Dif.e-Hellman (DH) key
+agreement protocol
+
+IKE thực hiện quá trình dò tìm, quá trình xác thực, quản lý và trao đổi khóa. IKE sẽ dò tìm ra được một hợp đồng giữa hai đầu cuối IPSec và sau đó SA sẽ theo dõi tất cả các thành phần của một phiên làm việc IPSec. Sau khi đã dò tìm thành công, các thông số SA hợp lệ sẽ được lưu trữ trong cơ sở dữ liệu của SA.
+
+ISAKMP liên quan rất chặt chẽ đến quản lý chính sách, trong đó cho phép các mức khác nhau của sự điều chỉnh. Khả năng thúc đẩy hoặc thay đổi chính sách trên thiết bị đầu cuối của người dùng là một trong những điểm chính của thiết kế VPN cho doanh nghiệp. VPN 3000 Concentrator có chế độ cấu hình, trong đó cho phép những người dùng ở xa có thể kiểm soát các chính sách, bao gồm DNS, WINS, IP address và domain name.
+
+IPSEC SA là một chiều và được dùng cho quá trình trao đổi thật sự giữa hai thiết bị. Vì vậy, quá trình giao tiếp hai chiều giữa hai thiết bị yêu cầu ít nhất 2 IPSec Sas, mỗi SA cho một chiều, bởi vì IPSec Sa là các kết nối dữ liệu đơn chiều. Ví dụ, khi một phiên TCP hai chiều tồn tại giữa hai hệ thống, A và B, sẽ có một SA từ A về B và sẽ có 1 SA từ B về A. Nếu cả hai giao thức bảo mật, AH và ESP được áp dụng vào các dòng traffic một chiều, hai SA sẽ được tạo ra cho dòng dữ liệu.
+
+Một SA được nhận ra bởi địa chỉ IP, một giao thức bảo mật (AH hay ESP) và một chỉ số SPU. Chỉ số SPI là một giá trị 32-bit được gán vào quá trình tạo SA bởi phía đầu kết nối IPSec. Giá trị SPI cho AH và ESP là không giống nhau cho cùng một dòng dữ liệu. Giá trị SPI là một field trong cả hai header của AH và ESP và nó được chỉ ra bởi SA cho tất cả các giao tiếp giữa hai node. Ba thành phần của SA cho phép đầu nhận kết hợp các gói nhận một cách phù hợp.
+
+III.3.3. Quá trình bắt tay của ISAKMP, các pha và các chế độ của IPSec
+
+SA cho cả IKE và IPSec được dò tìm bởi IKE trong các giai đoạn và các chế độ khác nhau. Các thuật ngữ pha (phase) và chế độ (mode) mô tả các bước liên quan trong quá trình thiết lập một kết nối IPSec. Quá trình trao đổi khóa và quản lý khóa là một phần quan trọng của IPSec bởi vì một số khóa phải được trao đổi để các bên có thể giao tiếp với nhau an toàn.
+
+Hai phương thức cho việc trao đổi và quản lý khóa được dùng bởi IPSec bao gồm: khóa bằng tay (manual keying) và IKE, trong đó IKE dựa trên ISAKMP/Oakley. IKE có ba chế độ cho việc trao đổi khóa và thiết lập SAs: main, aggressive và quickmode.
+
+Hai chế độ đầu tiên là của giai đoạn 1 (main và aggressive) trong đó thiết lập các kênh an toàn ban đầu – IKE SA. Một chế độ khác gọi là pha 2 (quick), trong chế độ này IPSEC SA sẽ được bắt tay. Mặc dù quá trình bảo vệ danh xưng không cần, chỉ có aggressive mode có thể được dùng để giảm thời gian cho quá trình bắt tay này.
+
+Trong ISAKMP, pha 1 diển ra khi hai đối tác ISAKMP thiết lập một kết giao tiếp an toàn, đã xác thực. Các chế độ main và aggressive sẽ hoàn thành pha 1 và chỉ liên quan đến pha 1. Pha 2 diễn ra khi SA sẽ bắt đầu tiếp tục bắt tay trên các dịch vụ khác như IPSEc hoặc các dịch vụ yêu cầu các thông số khác. Chế độ quickmode sẽ hoàn tất quá trình trao đổi của pha 2 và chỉ được dùng trong pha 2. Trong IPSEc, pha 1 IKE sẽ dòm tìm IPSec Sa. Hai chế độ sẽ được dùng trong giai đoạn này: main mode được dùng trong phần lớn các tình huống và aggressive mode được dùng trong một số tình huống khác. Aggressive mode thường là tiêu biểu cho các tình huống khi quá trình xác thực là không cần thiết hoặc đã được thực hiện trước đó). Người dùng sẽ không có cách kiểm sóat chế đô nào sẽ được dùng. Chế độ này là tự động và phụ thuộc vào cấu hình các thông số được cấu hình bởi hai đầu. Trong pha 2, IKE sẽ bắt tay IPSec Sa và chỉ dùng quickmode. Các thông số và chức năng của IKE và IPSec và sự khác nhau giữa hai chế độ này được hiển thị trong hình:
+
+
+
+IPSec SA sẽ kết thúc thông qua quá trình xóa hoặc timeout. Khi SA kết thúc, khóa sẽ bị bỏ. Khi các IPSec SA là cần thiết, IKE sẽ thực hiện pha 2 mới, và nếu cần thiết, pha 1 mới sẽ được bắt tay. Một quá trình bắt tay thành công sẽ có kết quả là các SAs mới và khóa mới. Các SAs mới có thể được thiết lập trước khi các SAs bị hết hạn, và vì vậy một dòng dữ liệu mới có thể được truyền mà không bị ngắt quãng.
+
+ 
+
+L2TP
+
+III.3.2.3. L2TP
+
+L2TP được mô tả trong RFC 2661. Giao thức này kết hợp tất cả các đặc điểm hay nhất của hai giao thức hiện có: Cisco’s Layer 2 Forwarding (L2F) and Microsoft’s PPTP.
+
+L2TP là một phiên bản mở rộng của PPP và là thành phần rất quan trọng của VPNs. L2TP được xem là có khả năng mở rộng hơn PPTP và nó cũng hoạt động ở chế độ PPTP. Một L2TP tunnel có thể khởi tạo từ một PC ở xa quay trở về L2TP Network server (LNS) hay từ L2TP access concentrator (LAC) và LNS. Mặc dù L2TP vẫn dùng PPP, nó định nghĩa cơ chế tunneling của riêng nó, tùy thuộc vào phương tiện truyền chứ không dùng GRE.
+
+
+
+L2TP có thể chuyển các giao thức lớp 3 khác nhau. L2TP có thể fùng PAP, CHAP và EAP cho vấn đề kiểm tra xác thực, tuy nhiên một sự khác nhau chủ yếu là traffic có thể được an toàn trên toàn bộ đường đi từ PC của người dùng đến mạng của công ty.
+
+L2TP có thể dùng hai kiểu thông điệp: thông điệp điều khiển và thông điệp dữ liệu.
+
+
+
+Các thông điệp điều khiển chịu trách nhiệm thiết lập, duy trì và hủy các tunnels. Các thông điệp dữ liệu đóng gói các frame PPP được chuyển trên tunnels. Các thông điệp điều khiển dùng các cơ chế điều khiển tin cậy bên trong L2TP để đảm bảo việc phân phối; trong khi các thông điệp dữ liệu không được truyền lại khi thông điệp bị mất trong quá trình truyền.
+
+Các khung PPP được truyền trên các kênh dữ liệu và được đóng gói bởi một L2TP header, sau đó được truyền bởi UDP/FrameRelay/ATM. Các thông điệp điều khiển được gửi trên các kênh tin cậy. Các chỉ số tuần tự (sequence number) phải có trong tất cả các thông điệp điều khiển. Chỉ số này sẽ giúp phát hiện hiện tượng mất packets.
+
+Ví dụ dưới đây sẽ sẽ mô tả quá trình đóng gói L2TP trên đường truyền HDLC.
+
+
+
+Một cấu trúc tổng quát hơn được biểu diễn trong hình vẽ bên dưới:
+
+
+
+ 
+
+ 
+
+PPTP and GRE
+
+III.3.2.2. PPTP and GRE
+
+PPPTP được định nghĩa bởi IETF trong RFC 2673. Protocol này đưọc thiết kế bởi Microsoft để cho phép các kết nối chi phi thấp đến các mạng của doanh nghiệp thông qua mạng Internet công cộng. Các phiên kết nối PPTP bảo mật cho phép kết nối vào mạng doanh nghiệp thông qua Internet. Các cuộc gọi này thường được gọi vào các thiết bị phần cứng, sau đó thiết bị này kết nối vào một Windows NT server. FEP sẽ truyền các gói PPP từ người dùng cuối và sau đó đóng gói các gói đó vào mạng WAN. Bởi vì PPP hỗ trợ nhiều giao thức khác nhau (IP, IPX, NetBEUI), nó có thể truy cập các hạ tầng mạng rất khác nhau. Kiến trúc này bao gồm các ứng dụng client/server trong đó client là các PC của người dùng, chạy PPTP. Về phía server, sẽ có các dial-in routers, VPN concentrator.
+
+Cả hai đầu đều có thể khởi tạo tunnel. Khi người dùng ở xa khởi tạo một tunnel, nó được gọi là chế độ xung phong (voluntary mode). Khi tunnel được tạo từ server, chế độ này được gọi là compulsory mode. Một NAS có thể khởi tạo một tunnel ngay cả khi một client không có chạy PPTP.
+
+PPTP sẽ đóng gói các frame PPP vào các IP datagrams để truyền trên hệ thống mạng IP, chẳng hạn như mạng Internet/Intranet. PPTP sẽ kế thừa các đặc tính của PPP như mã hóa, nén…PPTP yêu cầu một hạ tầng mạng IP giữa một PPTP clients và một PPTP server. PPTP client có thể được kết nối vào một mạng IP mà PPTP server cũng kết nối vào mạng IP này. Hoặc PPTP clients cũng có thể quay vào một NAS để thiết lập kết nối IP.
+
+PPTP dùng TCP để tạo và hủy các tunnel. PPTP cũng dùng một phiên bản bổ sung của GRE để đóng gói PPP như là dữ liệu của tunnel. Tải của khung PPP có thể được mã hóa hoặc nén hoặc cả hai.
+
+GRE được định nghĩa trong RFC 1701 và 1702, đơn giản chỉ là một cơ chế để thực hiện quá trình đóng gói một giao thức lớp network tùy ý vào một giao thức khác. GRE cung cấp một cơ chế đơn giản, gọn nhẹ để đóng gói data để gửi trên mạng IP. Vì vậy PPTP có thể truyền các giao thức khác nhau ở lớp network, chẳng hạn như IP, IPX và NetBEUI.
+
+Quá trình xác thực diễn ra trong giai đoạn tạo các kết nối VPN PPTP sử dụng cùng một cơ chế nhưng các kết nối PPP; nghĩa là cũng dùng PAP hoặc CHAP. Một phiên bản nâng cao của CHAP, được gọi là MS-CHAP được tạo ra bởi Microsoft dùng các thông tin trong NT domain. Một chọn lựa khác cho quá trình xác thực là IETF PPP (Extensible Authentication Protocol –EAP). Microsoft cũng đã tích hợp một giao thức khác gọi là
+Microsoft Point-to-Point Encryption (MPPE)4 để mã hóa traffic trên các kết nối PPP.MPPE dựa trên thuật toán RSA R4 (Rovest, Shamir, and Adelman (RSA) RC4).
+Nếu quá trình mã hóa trên toàn bộ kết nối là cần thiết, IPSEC có thể mã hóa IP traffic từ đầu kết nối cho đến cuối kết nối (end-to-end) sau khi một kênh PPTP đã được thiết lập.
+
+Đối với Windows 2000, cả hai giao thức EAP-Transport Level Security (EAP-TLS) hoặc MS-CHAP phải được dùng cho dữ liệu bên trong các PPP frame.
+
+PPTP Control Connection and Tunnel Maintenance:
+Kết nối PPTP giữa địa chỉ IP của PPTP client và IP address của PPTP server dùng port 1723. Các gói dữ liệu PPTP mang các thông tin điều khiển kết nối để duy trì PPTP tunnel.
+
+
+
+Sau giai đoạn bắt tay ban đầu, hai bên sẽ trao đổi một loạt các thông điệp bao gồm 12 thông điệp thiết lập và duy trì kết nối.
+PPTP Data Tunneling PPTP
+Quá trình đóng gói dữ liệu thông qua nhiều mức đóng gói khác nhau. Cấu trúc được thể hiện trong hình sau:
+
+
+
+Dữ liệu ban đầu được mã hóa và đóng gói trong các PPP header để tạo ra các frame PPP. Frame PPP này sau đó sẽ được đóng gói với các GRE header.
+
+ 
+
+CÁC LOẠI VPN
+
+III. CÁC LOẠI VPN:
+
+Một mạng riêng ảo (VPN) chỉ ra việc truyền các dữ liệu riêng trên một hạ tầng mạng công cộng. So với các công nghệ khác, để hiểu về VPN và các đặc tính phức tạp thì người học gặp nhiều khó khăn. Trong chương này, các vấn đề sau đây sẽ được trình bày:
+
+• Service provider VPNs
+• Enterprise VPNs
+• Các công nghệ VPNs ở lớp datalinks
+• IPSec and security associations
+• IPSec modes and protocols
+• Trao đổi khóa (Key exchange), băm (hashing) , và mã hóa (encryption) trong IPSec
+
+III.1. Service Provider, Dedicated, and Access VPNs
+
+Trong thế giới truyền thông trước đây, các nhà cung cấp dịch vụ thường nhấn mạnh đến các dịch vụ truyền thông ở cấp thấp, ví dụ như leased line và Frame Relay. Trong thế giới truyền thông ngày nay, các nhà cung cấp dịch vụ thường làm việc với khách hàng để đáp ứng các nhu cầu về mạng của khách hàng thông qua việc sử dụng VPN. Dịch vụ VPN của các nhà cung cấp dịch vụ (còn được gọi là provider dependant VPN) là một trong những công nghệ chủ chốt mà các nhà cung cấp dịch vu sẽ dùng để cạnh tranh trong những năm sắp đến. VPN cho phép mở rộng các kết nối mạng của các doanh nghiệp và việc mở rộng này được triển khai trên hạ tầng mạng chung. Một VPN có thể được xây dựng trên hạ tầng mạng Internet hoặc trên mạng IP, FrameRelay, ATM của nhà cung cấp dịch vụ. Giải pháp này ngày nay còn được gọi là dedicated VPN hoặc là VPN kiểu cũ.
+
+Một dịch vụ VPN mới được gọi là Remote Access to Multiprotocol Label Switching Virtual Private Network (RA to MPLS VPN). Dịch vụ này cho phép những người dùng mạng từ xa (remote user) kết nối vào mạng của công ty họ. Dịch vụ này quản lý các kết nối từ xa cho các người dùng cơ động, các văn phòng nhỏ. Giải pháp này còn được gọi là truy cập VPN.
+
+
+
+Từ quan điểm của nhà cung cấp dịch vụ, MPLS là một đồ hình mạng dạng full-mash hoặc dạng hub-and-spokes, tùy thuộc vào khách hàng muốn kết nối các chi nhánh của họ như thế nào. Từ góc độ người dùng, các ISP sẽ cung cấp dịch vụ site-to-site VPN. ISP sẽ xây dựng một mạng IP riêng và cho phép các khách hàng khác nhau kết nối các site của họ trên mạng IP này. Công nghệ này cho phép các khách hàng riêng rẽ xem dịch vụ MPLS như thể họ đang có một mạng riêng kết nối các chi nhánh. Tình huống này cho phép khách hàng sử dụng những ưu điểm giống như của các công nghệ Layer 2 như FrameRelay và ATM nhưng lại có những đặc tính mở rộng và khả năng quản lý của layer 3. Ngoài ra, bởi vì MPLS chạy trên một mạng IP riêng chứ không phải là Internet, các ISP có thể cung cấp các mức khác nhau của chất lượng dịch vụ (QoS) và SLA. Tuy nhiên, do MPLS được dựa trên mạng riêng của nhà cung cấp dịch vụ, khả năng cung cấp dịch vụ bị giới hạn bởi các khu vực mà các ISP hoạt động.
+
+Giải pháp Remote Access to MPLS VPN cung cấp các chọn lựa mở rộng đối với hệ thống MPLS VPN hiện tại. Ở thời điểm hiện tại, một nhà cung cấp dịch vu ISP có thể tạo ra các kết nối VPN hiệu quả trên hạ tầng mạng của ISP thông qua các kết nối dialup, DSL, và Cable Modem (DOCSIS).
+
+Với việc giới thiệu dịch vụ Remote Access to MPLS VPN, các nhà cung cấp dịch vụ đã có thể tích hợp các phương thức truy cập khác nhau vào dịch vụ VPN của họ. Điều này cho phép các nhà cung cấp dịch vụ ISP cung cấp thêm nhiều gói dịch vụ đến các khách hàng. Các khuynh hướng công nghệ mới được ưa chuộng là dùng wireless, dùng vệ tinh và multiprotocol VPN. Gần đây, Cisco cũng đã công bố công nghệ Any Transport Over MPLS (AToM)2 tích hợp L2 tunneling vào mạng MPLS. Với việc dùng IP-based MPLS với IPSEC/L2TP, các nhà cung cấp dịch vụ có thể cải tiến khả năng mở rộng và hiện thực QoS.
+
+ 
+
+ 
+
+GIỚI THIỆU MPLS VPN
+
+GIỚI THIỆU MPLS
+
+Multiple Protocol Lable Switching MPLS những năm gần đây đã và đang được triển khai ngày càng qui mô và rộng lớn trên nhiều quốc gia. Thậm chí đối với những đất nước nơi mà nền công nghệ thông tin phát triển sau các nước tiên tiến trên thế giới đang cân nhắc để họ có thể bỏ qua bước xây dựng các cơ sở hạ tầng phục vụ cho truyền tải lớp 2 truyền thống như các nước tiên tiến đã sử dụng như ATM hay Frame Relay để tiến thẳng đến xây dựng một cơ sở hạ tầng MPLS.Vậy MPLS là gì và dựa trên những lợi ích to lớn nào mà nó có thể dần dần thay thế các công nghệ cũ trước đó?
+MPLS nói chung là một công nghệ chuyển mạch không dựa vào IP mà dựa vào một khái niệm mới gọi là nhãn (label). Nhãn được thêm vào gói IP và được quảng bá đi giữa các router để hình thành nên các ánh xạ giữa nhãn và địa chỉ IP. Lúc này, việc chuyển mạch các gói tin sẽ không cần thực hiện việc tra cứu vào bảng định tuyến IP tức dựa trên địa chỉ đích nữa mà hoàn toàn dựa vào bảng ánh xạ nhãn.
+Đây không phải là một kỹ thuật xa lạ khi mà Frame Relay và ATM đã áp dụng nó để vận chuyển frame hoặc cell. Ở mỗi hop trong network, giá trị có thể hiểu là nhãn như là DLCI hay VPI/VCI sẽ bị thay đổi bởi 1 giá trị nhãn khác và điều này làm nó khác với cách chuyển mạch IP truyền thống khi địa chỉ đích ở mỗi next hop luôn được duy trì không đổi. Vậy tại sao phải sử dụng MPLS?
+Trước MPLS, ATM và Frame Relay đóng vai trò là những công nghệ WAN chủ chốt, cung cấp các kết nối và đường truyền riêng cho các dịch vụ lớp 2với sự riêng tư và ảo hóa cao, đồng thời hỗ trợ luôn các dịch vụ lớp 3 gọi là các overlay network. Tuy nhiên, để có thể làm được điều đó, nhà cung cấp dịch vụ phải xây dựng những hạ tầng riêng cho từng loại lớp dịch vụ và điều này làm học tiêu tốn không ít chi phí.
+Ở Việt Nam, hầu hết các mạng WAN đều sử dụng dịch vụ leased line thông qua các nhà cung cấp dịch vụ viễn thông với lối hoạt động theo giao thức định tuyến IP truyền thống khiến cho giá thành trở nên đắt đỏ và chất lượng dịch vụ kém do các router thường xuyên bị quá tải dẫn đến việc mất lưu lượng hay mất kết nối. Nhưng khi triển khai MPLS và dịch vụ điển hình của nó là MPLS VPN, các nhược điểm kể trên hoàn toàn có thể được khắc phục. MPLS với việc chuyển mạch dựa vào nhãn mang lại nhiều lợi ích to lớn hơn cho các nhà cung cấp dịch vụ khi có thể giúp họ tiết kiệm được chi phí cho việc xây dựng cơ sở hạ tầng vì MPLS không chỉ cho phép vận chuyển các gói lớp 3 bằng giao thức IP thông qua MPLS backbone mà còn cho phép bất kỳ giao thức giao thức non-IP lớp 2 nào như Frame Relay, ATM, Ethernet, HDLC, PPP được vận chuyển chỉ trên một cơ sở hạ tầng tích hợp duy nhất. Ngoài ra, nó còn hỗ trợ nhiều ứng dụng hữu ích như định tuyến unicast, multicast, truyền tải dựa vào QoS và phân luồng giúp giảm thiểu sự quá tải trong các router core .
+Phần sau đây sẽ giới thiệu về kiến trúc MPLS cũng như một số khái niệm về cách thức hoạt động của nó trong các thiết bị của CISCO.
+
+1.1 Kiến trúc MPLS
+Trước tiên xin giới thiệu một số khái niệm và thuật ngữ sử dụng trong MPLS
+- MPLS domain/backbone: Là hệ thống mạng của nhà cung cấp dịch vụ chạy giao thức MPLS
+-FEC:MPLS không thực hiện quyết định chuyển tiếp với gói dữ liệu lớp 3 (datagram) mà sử dụng một khái niệm mới gọi là FEC (Forwarding Equivalence Class). Mỗi FEC là một tập hợp các gói tin có chung các yêu cầu về truyền tải hoặc dịch vụ (thoại, data, video, VPN…) hoặc cùng yêu cầu về QoS và được truyền qua một LSP. Hay nói một cách khác, MPLS thực hiện phân lớp dữ liệu để chuyển tiếp qua mạng.
+- LSP (Label Switch Path): Đường hầm nơi mà FEC sẽ được vận chuyển qua để về tới đích. Khái niệm về LSP tương tự như khái niệm về kênh ảo (Virtual Channel) trong mạng IP, ATM, Frame Relay …
+- PE (Provider edge): router chạy MPLS kết nối trực tiếp với router khách hàng
+- CE(Customer Edge): router khách hàng kết nối trực tiếp với PE.
+- LSR (Label Switching Router): Các router hay switch chạy trong MPLS domain. Gồm 2 loại LSR là:
+·ingress LSR/ egress LSR: 2 điểm đầu cuối của LSP, còn được xem là các PE.
+·LSR chuyển tiếp (Transit LSR): router hay switch thuộc MPLS domain, các LSR này chính là các bộ định tuyến lõi (core router) của nhà cung cấp dịch vụ.
+
+-Nhãn (Label): trường được thêm vào giữa header và lớp 2 và lớp 3, có định dạng :
+
+
+
+Hình 1. Cấu trúc nhãn
+
+·Trường Label: Có độ dài 20 bit, đây chính là giá trị nhãn.
+·Trường Exp (Experimental): Có độ dài 3 bit dùng cho mục đích dự trữ nghiên cứu và phân chia lớp dịch vụ (CoS – Class Of Service).
+·Trường BoS (hay S): Có độ dài 1 bit, dùng chỉ định nhãn cuối cùng của một chồng nhãn (Label Stack). Với nhãn cuối cùng, BoS=1 hay S=1.
+·Trường TTL (Time To Live): Có mục đích như trường TTL trong gói tin IP.
+Vị trí của nhãn trong gói tin MPLS header là nằm giữa layer 2 và layer 3 header nên thường được gọi là Shim header.
+
+http://ca6.upanh.com/14.867.19106465.Qke0/image002.jpg
+Hình 2. Cấu trúc MPLS Shim Header
+
+- LDP (Label Distribution Protocol): Là giao thức phân phối nhãn được dùng để gán nhãn và thiết lập các LSP thông qua mạng MPLS.
+
+1.1.1 MPLS Control Plane:
+http://ca7.upanh.com/14.867.19106466.Hxg0/image003.jpg
+Hình 3. MPLS control plane
+Phần này bao gổm việc thực thi giao thức định tuyến để hình thành nên bảng định tuyến RIB. Dựa vào bảng định tuyến, giao thức LDP sẽ bắt đầu quá trình ràng buộc nhãn tức gán nhãn ở nội bộ từng router và quảng bá nhãn này cho các router có quan hệ là láng giềng hay kế cận với nhau khi có một kết nối TCP được thiết lập giữa chúng. Thông tin này sẽ sẽ được lưu trong bảng LIB (Label Information Base). Ngoài ra bảng FIB cũng được tạo ra là bảng copy của bảng RIB cùng với thông tin về nhãn cho từng Prefix IP Address. Route tốt nhất trong RIB được đưa vào FIB, bảng FIB dùng để nhận các gói tin không nhãn để đưa vào miền có nhãn và ngược lại (nhận gói tin có nhãn đưa vào miền không nhãn), LFIB là bảng có chứa thông tin nhãn dùng để forward những gói tin đã có nhãn, đó là lý do tại sao 2 bảng FIB và LFIB nằm trong data plane. Trong hầu hết các trường hợp thuộc về hoạt động của các LSR trung chuyển, khi hoạt động chuyển mạch dựa hoàn toàn vào nhãn, bảng LFIB là bảng cuối cùng dùng cho việc tìm đường đi của các LSR.
+
+1.1.2. MPLS Data Plane:
+http://ca4.upanh.com/14.867.19106467.Xkt0/image004.jpg
+Hình 4. MPLS Data Plane
+
+Đây là phần chịu trách nhiệm về việc chuyển tiếp gói tin ra interface thích hợp dựa vào thông tin của bảng LFIB hoặc FIB tùy theo gói tin đó có chứa nhãn hay đã bị gỡ nhãn, hoạt động độc lập với các giao thức định tuyến hay phân phối nhãn.
+
+1.2. Hoạt động của MPLS:
+Giả sử ta có mô hình sau:
+http://ca6.upanh.com/14.867.19106469.In70/image005.jpg
+Hình 5. Topology một mạng MPLS
+Đầu tiên, một giao thức định tuyến nội IGP bất kỳ có thể được chọn để chạy định tuyến lớp 3 giữa các router MPLS backbone. Giao thức này có thể là RIP, OSPF, EIGRP hay IS-IS để từ đó hình thành nên bảng định tuyến RIB. Sau đó là đến phần hoạt động của MPLS.
+Qui tắc hoạt động khá đơn giản. Đầu tiên gói tin gửi từ CE đến ingress PE sẽ được tạo FEC và gán nhãn. Mỗi router sẽ tự sinh ra một nhãn local để gán cho mỗi prefix địa chỉ có trong bảng RIB, thông tin này được đưa vào bảng LIB. Dựa vào giao thức LDP, mối quan hệ neighbor hay peer giữa các router được hình thành, nhãn local sẽ được quảng bá cho tất cả các router peer và thông tin này được lưu trong bảng FIB. Tham khảo nội dung của bảng LIB và FIB, một router sẽ tự chọn ra một next hop tức outbound interface thích hợp để chuyển tiếp gói tin. Ở mỗi router trung chuyển, nhãn có thể được thêm vào (push), được gỡ ra (pop) hoặc được hoán đổi (swap).
+Xem ví dụ về hoạt động của một router trung chuyển sau:
+http://ca7.upanh.com/14.867.19106470.iVE0/image006.jpg
+Hình 6. Hoạt động xử lý của LSR trung chuyển
+Thông tin từ con LSR này cho thấy, bảng RIB được hình thành bằng giao thức OSPF. Trong bảng này có một prefix là 10.0.0.0/8.Khi chạy giao thức LDP, LSR tự sinh nhãn 24 để gán cho prefix này. Ngoài ra nó cũng nhận được thông tin quảng bá từ router peer khác gán nhãn cho prefix này là 17 và có thể có nhiều router khác cũng quảng bá nhãn cho prefix này nhưng không được nêu. Dựa vào bảng LIB và thông tin trong bảng FIB (nhắc lại, bảng FIB là bảng copy của RIB, nó chứa thông tin về các next hop tốt nhất cho mỗi prefix dựa vào địa chỉ IP đích ), bảng LFIB được hình thành chứa thông tin về đường đi tối ưu về prefix này là phải phải đi qua router có gán nhãn 17 cho nó. Vì thế, prefix này từ gán nhãn 24 sẽ được hoán đổi thành nhãn 17.
+Gói tin cứ thế được truyền đi và tới con egress PE. Tại đây nhãn sẽ được gỡ bỏ hết và gói tin được forward đi là một gói IP bình thường cho CE.
+1.3. Giới thiệu về MPLS VPN
+MPLS VPN là một trong những ứng dụng cực kỳ thành công của MPLS. Có thể tham khảo các ứng dụng dựa trên nền tảng MPLS như sau:
+http://ca6.upanh.com/14.867.19106473.CYx0/image007.jpg
+Hình 7. Ứng dụng MPLS
+MPLS VPN ra đời là sự kết hợp những tính năng có lợi và bỏ đi các khuyết điểm của các loại hình VPN cũ như overlay và peer-to-peer VPN. Trong MPLS VPN, các router biên PE sẽ tham gia vào quá trình định tuyến với CE, bảo đảm cho việc định tuyến là tối ưu giữa các site khách hàng. Trong đó, mỗi PE sẽ chứa thông tin về các route riêng biệt cho mỗi site khách hàng và cho phép khách hàng có thể sử dụng những dải địa chỉ trùng nhau.
+
+1.4 Kiến trúc và hoạt động của một MPLS VPN
+http://ca7.upanh.com/14.867.19106474.AEF0/image008.jpg
+Hình 8. Topology MPLS VPN
+MPLS cung cấp một giải pháp kết nối multi-site linh hoạt cho khách hàng khi không chỉ nộ bộ các site khách hàng có thể giao tiếp được với nhau mà từ site của khách hàng này cũng có thể kết nối được tới site của khách hàng khác.
+Khi chạy MPLS VPN, trước hết MPLS phải được xây dựng trước bằng việc chạy định tuyến nội trong vùng MPLS backbone và bật các tính năng MPLS để hình thành nên các bảng chứa thông tin nhãn. Tiếp đó, tính chất VPN được xây dựng thông qua các bước như sau:
+
+-Mỗi router biên của nhà cung cấp dịch vụ sẽ chạy định tuyến cùng với khách hàng. Thông tin về định tuyến với mỗi khách hàng sẽ được lưu trong một bảng định tuyến riêng cho khách hàng đó gọi là VRF (virtual route forwarding).
+-Các thông tin định tuyến sau đó sẽ được redistribute tức quảng bá qua lại giữa CE và PE.
+-Thiết lập phiên kết nối giữa các PE và chỉ có PE mới cần chạy IBGP với nhau. Các con P trung chuyển không cần phải thiết lập IBGP.
+-Lúc này, các PE sẽ sử dụng một loại địa chỉ 96 bit mới để giao dịch với nhau gọi là VPNv4, nó là sự kết hợp của 32 bit địa chỉ IP và 64 bit giá trị RD (router distinguisher). Với RD là giá trị để nhận dạng cho một dải địa chỉ của một site khách hàng.
+-Ứng với mỗi RD cần xác định giá trị RT. Giá trị này nhằm xác định đích đến của gói tin trong trường hợp muốn kết nối đến site của khách hàng khác.
+
+MPLS VPN sử dụng 2 loại nhãn là IGP label và VPN label. IGP label là nhãn được gán cho các prefix IPv4 trong bảng định tuyến RIB được xây dựng bởi các giao thức định tuyến nội IGP, nhãn này nằm ở trên cùng trên chồng nhãn và sẽ được sử dụng trong việc chuyển mạch các gói tin trong mạng lõi MPLS. VPN label là nhãn dùng để xác định VRF mà một gói tin thuộc về. Nhãn này nằm dưới cùng trong chồng nhãn. Trong nhiều trường hợp, nó dùng để xác định next hop để forward gói tin về đúng CE từ một PE.
+
+ 
+
+Tổng quan MPLS phần V- Cấu hình MPLS cơ bản
+
+3 – Các bước cấu hình MPLS cơ bản
+Cấu hình theo chế độ khung
+
+Bứớc 1: Cho phép CEF
+- CEF là một thành phần thiết yếu cho chuyển mạch nhãn (label switching) và chịu trách nhiệm sắp xếp và cài đặt nhãn trong một mạng MPLS. Cấu hình CEF toàn cục trên các router PE và P bằng lệnh:
+Router(config)#ip cef [distributed]
+- Chắc chắn rằng CEF được cho phép trên giao tiếp. Nếu không được thì có thể cho phép CEF trên giao tiếp bằng cách dùng lệnh:
+Router(config-if)#ip route-cache cef
+- Dùng từ khóa [distribute] thể hiện khả năng của chuyển mạch CEF được chia sẻ. 
+
+Bước 2: Cấu hình giao thức định tuyến IGP
+- Ở đây ta xét giao thức OSPF. Cho phép các giao tiếp trên các router tham gia vào
+mạng của nhà cung cấp bằng lệnh :
+Router(config)#router ospf process-id
+Router(config-router)#network ip-address wild-card mask area area-id
+
+- Cho phép giao thức phân phối nhãn là một bước tùy chọn. Ngầm định, LDP là giao thức phân phối nhãn. Lệnh mpls label protocol {ldp | tdp} chỉ được dùng nếu LDP không phải là giao thức ngầm định hoặc nếu muốn chuyển đổi qua lại giữa LDP và TDP. Lệnh này nên cấu hình trong chế độ toàn cục ( Router(config)# ) tốt hơn trên giao tiếp ( Router(config-if)# ). Tuy nhiên lệnh cấu hình trên giao tiếp sẽ ghi đè lên lệnh cấu hình toàn cục.
+Bứớc 3: Gán LDP router ID
+- LDP sử dụng địa chỉ IP cao nhất trên một giao tiếp loopback như là một LDP router ID. Nếu không có địa chỉ loopback thì địa chỉ IP cao nhất trên router sẽ trở thành LDP router ID. Muốn buộc một giao tiếp trở thành LDP router ID dùng lệnh:
+Router(config)#mpls ldp router-id {interface | ip-address} [force]
+- Giao tiếp loopback được khuyến khích vì chúng luôn hoạt động.
+
+Bước 4: Cho phép Ipv4 MPLS hay chuyển tiếp nhãn trên giao tiếp
+Router(config-if)#mpls ip
+Kiểm tra cấu hình
+-Kiểm tra sự cho phép CEF trên router:
+Router#show ip cef
+- Xác định chuyển tiếp MPLS được cho phép trên giao tiếp :
+Router#show mpls interfaces
+- Xem trạng thái của tiến trình khám phá LDP. Hiển thị thông tin khám phá LDP của láng giềng và các giao tiếp mà tiến trình khám phá LDP đang chạy.
+Router#show mpls ldp discovery
+- Trường xmit/recv thể hiện giao tiếp đang truyền và nhận các gói LDP discovery Hello.
+- Xác định trạng thái các phiên làm việc với láng giềng LDP:
+Router#show mpls ldp neighbor 
